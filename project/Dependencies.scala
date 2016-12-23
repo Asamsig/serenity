@@ -2,6 +2,7 @@ import sbt._
 
 object Versions {
   val akka = "2.4.11"
+  val scalaVersion = "2.11.8"
 }
 
 object Dependencies {
@@ -14,7 +15,9 @@ object Dependencies {
   )
 
   val test = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test"
+    "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test",
+    "com.typesafe.akka"      %% "akka-testkit" % Versions.akka % "test",
+    "com.github.dnvriend"    %% "akka-persistence-inmemory" % "1.3.18" % "test"
   )
 
   val dependencies = akka ++ test
