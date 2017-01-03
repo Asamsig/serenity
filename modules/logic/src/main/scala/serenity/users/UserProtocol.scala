@@ -16,6 +16,7 @@ object UserProtocol {
     ) extends Cmd
 
     case class UserRegisteredEvt(
+        id: UserId,
         email: String,
         firstName: String,
         lastName: String,
@@ -42,6 +43,7 @@ object UserProtocol {
     case class HospesImportCmd(user: HospesUser) extends Cmd
 
     case class HospesUserImportEvt(
+        id: UserId,
         originId: List[Int],
         email: List[Email],
         firstName: Option[String],
@@ -50,8 +52,9 @@ object UserProtocol {
         phoneNumber: Option[String]
     ) extends Evt
 
-    def toHospesUserEvent(hospesUser: HospesUser): HospesUserImportEvt = {
+    def toHospesUserEvent(id: UserId, hospesUser: HospesUser): HospesUserImportEvt = {
       HospesUserImportEvt(
+        id,
         hospesUser.originId,
         hospesUser.email,
         hospesUser.firstname,

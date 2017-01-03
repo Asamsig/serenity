@@ -26,7 +26,7 @@ class UserActor(id: UserId) extends PersistentActor {
       sender() ! Failure(ValidationFailed("User exist"))
     case HospesImportCmd(hospesUser) =>
       persistAll(List(
-        toHospesUserEvent(hospesUser)
+        toHospesUserEvent(id, hospesUser)
         // todo other events!
       )) {
         case evt: HospesUserImportEvt =>
@@ -38,7 +38,7 @@ class UserActor(id: UserId) extends PersistentActor {
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@CreateUserCmd(email, firstName, lastName) =>
       persist(
-        UserRegisteredEvt(email, firstName, lastName, new Date())) { evt =>
+        UserRegisteredEvt(id, email, firstName, lastName, new Date())) { evt =>
         updateUserModel(evt)
         sender() ! Success("")
       }
@@ -48,8 +48,8 @@ class UserActor(id: UserId) extends PersistentActor {
   }
 
   def updateUserModel(evt: Evt) = evt match  {
-    case evt: HospesUserImportEvt => user = EventToUser(id, evt)
-    case evt: UserRegisteredEvt => user = EventToUser(id, evt)
+    case evt: HospesUserImportEvt => user = EventToUser(evt)
+    case evt: UserRegisteredEvt => user = EventToUser(evt)
     case _ =>
   }
 
@@ -63,8 +63,8 @@ object UserActor {
 
 object EventToUser {
 
-  def apply(id: UserId, evt: HospesUserImportEvt): Option[User] = Some(User(
-    id,
+  def apply(evt: HospesUserImportEvt): Option[User] = Some(User(
+    evt.id,
     evt.email.head,
     evt.email.tail,
     evt.phoneNumber,
@@ -73,10 +73,10 @@ object EventToUser {
     evt.lastName,
     evt.address))
 
-  def apply(id: UserId, evt: UserRegisteredEvt): Option[User]= {
+  def apply(evt: UserRegisteredEvt): Option[User]= {
     Some(
       User(
-        uuid = id,
+        uuid = evt.id,
         mainEmail = Email(evt.email, validated = true),
         createdDate = evt.createdTime.toString,
         firstName = Some(evt.firstName)
