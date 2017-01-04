@@ -69,6 +69,8 @@ object UserProtocol {
 
     case class GetUser(id: UserId)
 
+    case class GetUserWithEmail(value: String)
+
     case class UserResponse(user: User)
 
     case object UserNotFound
