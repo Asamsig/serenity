@@ -5,6 +5,8 @@ import java.util.Date
 import akka.actor.Props
 import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
+import akka.persistence.journal.Tagged
+import cqrs.Tags
 import cqrs.cqrs.Evt
 import serenity.users.UserProtocol.read.{GetUser, UserNotFound, UserResponse}
 import serenity.users.UserProtocol.write._
@@ -30,7 +32,7 @@ class UserActor(id: UserId) extends PersistentActor {
         // todo other events!
       )) {
         case evt: HospesUserImportEvt =>
-          updateUserModel(evt)
+          Tagged(updateUserModel(evt), Set(Tags.USER_EMAIL))
           sender() ! Success("")
       }
 
@@ -38,9 +40,10 @@ class UserActor(id: UserId) extends PersistentActor {
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@CreateUserCmd(email, firstName, lastName) =>
       persist(
-        UserRegisteredEvt(id, email, firstName, lastName, new Date())) { evt =>
-        updateUserModel(evt)
-        sender() ! Success("")
+        UserRegisteredEvt(id, email, firstName, lastName, new Date())) {
+        evt =>
+          Tagged(updateUserModel(evt), Set(Tags.USER_EMAIL))
+          sender() ! Success("")
       }
     case GetUser(queriedId) if id != queriedId => sender() ! UserNotFound
     case GetUser(queriedId) => sender() ! user.map(UserResponse).getOrElse(UserNotFound)
