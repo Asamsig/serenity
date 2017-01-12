@@ -34,7 +34,6 @@ trait QueryStream extends Actor {
     case evt@EventEnvelope(_, _, snr, _) =>
       _curSeqNum = snr
     case LiveEvents =>
-      println("Going live!")
       streamLive.runWith(Sink.actorRef(self, LiveEvents))(ActorMaterializer()(context.system))
       _live = true
     case _ =>

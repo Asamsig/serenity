@@ -60,8 +60,7 @@ class SomeStore(id: String) extends PersistentActor {
   }
 
   override def receiveCommand: Receive = {
-    case m: Int => persist(m) { evt => println(s"saved $m"); sender() ! Saved}
-    case m => println(s"Unhandled in store $m")
+    case m: Int => persist(m) { evt => sender() ! Saved}
   }
 
 }
@@ -78,13 +77,11 @@ class EventActor(id: String, to: Option[ActorRef] = None) extends PersistenceIdQ
 
   override def receive: Receive = {
     case LiveEvents => {
-      println(s"going live with $sum")
       unstashAll()
     }
     case EventEnvelope(_, _, _, v) if v.isInstanceOf[Int] => {
       val t = sum
       sum = sum + v.asInstanceOf[Int]
-      println(s"$t -> $sum after $v")
       to.foreach(_ ! v)
     }
     case GetSum => {
@@ -92,7 +89,6 @@ class EventActor(id: String, to: Option[ActorRef] = None) extends PersistenceIdQ
       else sender() ! sum
     }
     case IsLive => if (live) sender() ! live else stash()
-    case m => println(s"unhandled in event actor: $m")
   }
 }
 

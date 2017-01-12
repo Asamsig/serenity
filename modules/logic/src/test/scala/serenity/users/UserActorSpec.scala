@@ -30,11 +30,9 @@ class UserActorSpec extends AkkaSuite("UserActorSpec") {
       val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
 
       userActor ! HospesImportCmd(hospesUser)
-      println("Add 1st user")
       expectMsg(Success(""))
 
       userActor ! HospesImportCmd(hospesUser)
-      println("Add 2nd user")
 
       expectMsg(Failure(ValidationFailed("User exist")))
     }
