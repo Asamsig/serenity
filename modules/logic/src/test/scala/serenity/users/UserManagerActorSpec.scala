@@ -1,6 +1,11 @@
 package serenity.users
 
-import akka.actor.{Actor, ActorRef, Props}
+import java.util.{Date, UUID}
+
+import akka.actor.{ActorRef, Props}
+import akka.persistence.PersistentActor
+import akka.persistence.journal.Tagged
+import akka.persistence.query.EventEnvelope
 import akka.testkit.TestProbe
 import serenity.akka.AkkaSuite
 import serenity.users.UserManagerActorFixtures.beerDuke
@@ -12,19 +17,20 @@ import scala.util.Failure
 
 class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
 
-  def defaultSetup = new {
+  def defaultSetup() = new {
+    val tagName = UUID.randomUUID().toString
     val probe: TestProbe = new TestProbe(system)
     val props: (UserId) => Props = (id: UserId) => {
       val ref: ActorRef = probe.ref
-      Props(classOf[UsrActor], id, ref)
+      Props(classOf[UsrActor], id, ref, tagName)
     }
-    val actor: ActorRef = system.actorOf(UserManagerActor(props))
+    val actor: ActorRef = system.actorOf(UserManagerActor(props, tagName))
   }
 
   describe("Command messages") {
     describe("HospesImportCmd") {
       it("should forward msg") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
         val cmd = HospesImportCmd(beerDuke)
 
         setup.actor ! cmd
@@ -33,19 +39,18 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
       }
 
       it("should forward msg with unique email") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
         val cmd = HospesImportCmd(beerDuke)
         val cmd2 = HospesImportCmd(beerDuke.copy(email = List(Email("not_beerduke@java.no", validated = true))))
 
         setup.actor ! cmd
         setup.actor ! cmd2
 
-        setup.probe.expectMsg(cmd)
-        setup.probe.expectMsg(cmd2)
+        setup.probe.expectMsgAllOf(cmd, cmd2)
       }
 
       it("should reject 2nd msg with same email") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
         val cmd = HospesImportCmd(beerDuke)
 
         setup.actor ! cmd
@@ -59,7 +64,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
       val cmd = CreateUserCmd("tada@java.no", "ta", "da")
 
       it("should forward msg") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
 
         setup.actor ! cmd
 
@@ -67,18 +72,17 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
       }
 
       it("should forward msg with unique email") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
         val cmd2: CreateUserCmd = cmd.copy(email = "heh@java.no")
 
         setup.actor ! cmd
         setup.actor ! cmd2
 
-        setup.probe.expectMsg(cmd)
-        setup.probe.expectMsg(cmd2)
+        setup.probe.expectMsgAllOf(cmd, cmd2)
       }
 
       it("should reject 2nd with same email ") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
 
         setup.actor ! cmd
         setup.actor ! cmd
@@ -89,9 +93,15 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
   }
 
   describe("Query messages") {
+    def withEnvelope(cmd: HospesImportCmd): EventEnvelope = {
+      EventEnvelope(
+        1, "", 2,
+        UserProtocol.write.toHospesUserEvent(UUID.randomUUID(), cmd.user))
+    }
+
     describe("GetUserWithEmail") {
       it("should respond with failure if user doesn't exists") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
 
         setup.actor ! GetUserWithEmail("doesnt.exist@java.no")
 
@@ -99,23 +109,36 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
       }
 
       it("should forward message if user is exist") {
-        val setup = defaultSetup
+        val setup = defaultSetup()
         val query: GetUserWithEmail = GetUserWithEmail(beerDuke.email.head.address)
 
         val cmd: HospesImportCmd = HospesImportCmd(beerDuke)
         setup.actor ! cmd
-        setup.actor ! query
-
         setup.probe.expectMsg(cmd)
+
+        setup.actor ! query
         setup.probe.expectMsgClass(classOf[GetUser])
       }
+
     }
   }
 }
 
-class UsrActor(id: UserId, actorRef: ActorRef) extends Actor {
-  override def receive: Receive = {
-    case m@_ => actorRef.forward(m)
+class UsrActor(id: UserId, actorRef: ActorRef, tag: String) extends PersistentActor {
+  override def persistenceId: String = "UserManagerActorSpec"
+
+  override def receiveRecover: Receive = {
+    case m => unhandled(m)
+  }
+
+  override def receiveCommand: Receive = {
+    case m: HospesImportCmd => persist(Tagged(toHospesUserEvent(id, m.user), Set(tag))) {
+        evt => actorRef.forward(m)
+      }
+    case m: CreateUserCmd => persist(Tagged(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, new Date()), Set(tag))) {
+      evt => actorRef.forward(m)
+    }
+    case m => actorRef.forward(m)
   }
 }
 
