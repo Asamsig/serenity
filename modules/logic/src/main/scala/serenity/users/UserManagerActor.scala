@@ -2,64 +2,112 @@ package serenity.users
 
 import java.util.UUID
 
-import akka.actor.{ActorRef, Props}
-import akka.persistence.PersistentActor
-import cqrs.cqrs.{Cmd, Evt}
+import akka.actor.{ActorRef, Props, Stash}
+import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
+import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
+import akka.persistence.query.{EventEnvelope, PersistenceQuery}
+import cqrs.QueryStream.LiveEvents
+import cqrs.cqrs.Cmd
+import cqrs.{TagQueryStream, Tags}
 import serenity.users.UserProtocol.read.{GetUser, GetUserWithEmail}
-import serenity.users.UserProtocol.write.{CreateUserCmd, HospesImportCmd, ValidationFailed}
+import serenity.users.UserProtocol.write._
 import serenity.users.domain._
 
 import scala.util.Failure
 
-class UserManagerActor(userActorProps: UserId => Props) extends PersistentActor {
+class UserManagerActor(userActorProps: UserId => Props, tag: String) extends TagQueryStream with Stash {
 
-  var emailToUsers: Map[String, UserId] = Map()
-  var usersActor: Map[UserId, ActorRef] = Map()
+  override val tagName: String = tag
 
-  override def persistenceId: String = "users"
+  override def journal: CurrentEventsByTagQuery with EventsByTagQuery =
+    PersistenceQuery(context.system).readJournalFor(LeveldbReadJournal.Identifier) //todo config!
 
-  override def receiveRecover: Receive = events
+  var state = UserManagerState()
 
-  override def receiveCommand: Receive = commands orElse events orElse query
+  override def receive: Receive = events orElse commands orElse query
 
   def commands: Receive = {
-    case cmd: CreateUserCmd if emailToUsers.contains(cmd.email) =>
+    case cmd: CreateUserCmd if state.emailExists(cmd.email) =>
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd: CreateUserCmd =>
       createAccount(cmd, cmd.email)
 
-    case cmd@HospesImportCmd(usr) if emailToUsers.exists(usr.email.map(_.address) contains _._1) =>
+    case cmd@HospesImportCmd(usr) if state.emailExists(usr.email.map(_.address)) =>
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@HospesImportCmd(usr) =>
       createAccount(cmd, usr.email.head.address)
   }
 
+
   def events: Receive = {
-    case m: Evt => unhandled(m)
+    case EventEnvelope(_, _, _, e) => e match {
+      case u: HospesUserImportEvt =>
+        state = state.mailEvent(u)
+        if (live) unstashAll()
+      case u: UserRegisteredEvt =>
+        state = state.mailEvent(u)
+        if (live) unstashAll()
+    }
+    case LiveEvents =>
+      unstashAll()
+    case m if !live => stash()
   }
 
   def query: Receive = {
+    case GetUserWithEmail(email) if state.pendingUsers.keySet.contains(email) =>
+      stash()
     case GetUserWithEmail(email) =>
       (for {
-        (email, id) <- emailToUsers.find(_._1 == email)
-        userActor <- usersActor.find(_._1 == id).map(_._2)
+        (_, id) <- state.emailToUsers.find(_._1 == email)
+        userActor <- state.usersActor.find(_._1 == id).map(_._2)
       } yield (userActor, id)) match {
-        case Some((actor, id)) => actor.forward(GetUser(id))
-        case None => sender() ! Failure(ValidationFailed("User with email doesn't exist"))
+        case Some((actor, id)) =>
+          actor.forward(GetUser(id))
+        case None =>
+          sender() ! Failure(ValidationFailed("User with email doesn't exist"))
       }
   }
 
   def createAccount[C <: Cmd](cmd: C, email: String): Unit = {
     val userId: UserId = UUID.randomUUID()
     val userActor: ActorRef = context.actorOf(userActorProps(userId))
-    emailToUsers = emailToUsers + (email -> userId)
-    usersActor = usersActor + (userId -> userActor)
+    state = state.createActor(userId, email, userActor)
     userActor.forward(cmd)
   }
 
 }
 
 object UserManagerActor {
-  def apply(userActorProps: UserId => Props = UserActor.apply): Props =
-    Props(classOf[UserManagerActor], userActorProps)
+  def apply(userActorProps: UserId => Props = UserActor.apply, tagName: String = Tags.USER_EMAIL): Props =
+    Props(classOf[UserManagerActor], userActorProps, tagName)
+}
+
+case class UserManagerState(
+    pendingUsers: Map[String, UserId] = Map(),
+    emailToUsers: Map[String, UserId] = Map(),
+    usersActor: Map[UserId, ActorRef] = Map()) {
+
+  def createActor(id: UserId, email: String, actorRef: ActorRef) =
+    copy(
+      usersActor = usersActor + (id -> actorRef),
+      pendingUsers = pendingUsers + (email -> id))
+
+  def mailEvent(evt: HospesUserImportEvt) =
+    copy(
+      emailToUsers = emailToUsers ++ evt.email.map(_.address -> evt.id),
+      pendingUsers = pendingUsers.filter(p => !evt.email.map(_.address).contains(p._1)))
+
+  def mailEvent(evt: UserRegisteredEvt) =
+    copy(
+      emailToUsers = emailToUsers + (evt.email -> evt.id),
+      pendingUsers = pendingUsers - evt.email)
+
+  def emailExists(emails: Seq[String]): Boolean =
+    emailToUsers.keys.exists(e => emails.contains(e)) ||
+        pendingUsers.keys.exists(e => emails.contains(e))
+
+  def emailExists(email: String): Boolean =
+    emailToUsers.keys.exists(e => email == e) ||
+        pendingUsers.keys.exists(e => email == e)
+
 }

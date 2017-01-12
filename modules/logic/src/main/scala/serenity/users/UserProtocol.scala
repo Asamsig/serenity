@@ -2,7 +2,7 @@ package serenity.users
 
 import java.util.Date
 
-import cqrs.cqrs.{Cmd, Evt}
+import cqrs.cqrs.{Cmd, Evt, Query}
 import serenity.users.domain.{Email, User, UserId}
 
 object UserProtocol {
@@ -67,9 +67,9 @@ object UserProtocol {
 
   object read {
 
-    case class GetUser(id: UserId)
+    case class GetUser(id: UserId) extends Query
 
-    case class GetUserWithEmail(value: String)
+    case class GetUserWithEmail(value: String) extends Query
 
     case class UserResponse(user: User)
 
