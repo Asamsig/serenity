@@ -2,7 +2,7 @@ package serenity.users
 
 import java.util.Date
 
-import cqrs.cqrs.{Cmd, Evt, Query}
+import serenity.cqrs.{Cmd, Evt, Query}
 import serenity.users.domain.{Email, User, UserId}
 
 object UserProtocol {

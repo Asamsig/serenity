@@ -4,10 +4,9 @@ import java.util.{Date, UUID}
 
 import akka.actor.{ActorRef, Props}
 import akka.persistence.PersistentActor
-import akka.persistence.journal.Tagged
 import akka.persistence.query.EventEnvelope
 import akka.testkit.TestProbe
-import serenity.akka.AkkaSuite
+import serenity.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import serenity.users.UserManagerActorFixtures.beerDuke
 import serenity.users.UserProtocol.read.{GetUser, GetUserWithEmail}
 import serenity.users.UserProtocol.write._
@@ -15,16 +14,16 @@ import serenity.users.domain.{Email, UserId}
 
 import scala.util.Failure
 
-class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
+class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.inMemoryPersistence())
+    with InMemoryCleanup {
 
   def defaultSetup() = new {
-    val tagName = UUID.randomUUID().toString
     val probe: TestProbe = new TestProbe(system)
     val props: (UserId) => Props = (id: UserId) => {
       val ref: ActorRef = probe.ref
-      Props(classOf[UsrActor], id, ref, tagName)
+      Props(classOf[UsrActor], id, ref)
     }
-    val actor: ActorRef = system.actorOf(UserManagerActor(props, tagName))
+    val actor: ActorRef = system.actorOf(UserManagerActor(props))
   }
 
   describe("Command messages") {
@@ -124,7 +123,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") {
   }
 }
 
-class UsrActor(id: UserId, actorRef: ActorRef, tag: String) extends PersistentActor {
+class UsrActor(id: UserId, probeRef: ActorRef) extends PersistentActor {
   override def persistenceId: String = "UserManagerActorSpec"
 
   override def receiveRecover: Receive = {
@@ -132,13 +131,14 @@ class UsrActor(id: UserId, actorRef: ActorRef, tag: String) extends PersistentAc
   }
 
   override def receiveCommand: Receive = {
-    case m: HospesImportCmd => persist(Tagged(toHospesUserEvent(id, m.user), Set(tag))) {
-        evt => actorRef.forward(m)
-      }
-    case m: CreateUserCmd => persist(Tagged(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, new Date()), Set(tag))) {
-      evt => actorRef.forward(m)
+    case m: HospesImportCmd => persist(toHospesUserEvent(id, m.user)) {
+      evt =>
+        probeRef.forward(m)
     }
-    case m => actorRef.forward(m)
+    case m: CreateUserCmd => persist(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, new Date())) {
+      evt => probeRef.forward(m)
+    }
+    case m => probeRef.forward(m)
   }
 }
 

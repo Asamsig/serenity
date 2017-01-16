@@ -1,4 +1,4 @@
-package cqrs
+package serenity.persistence
 
 object Tags {
 
