@@ -9,7 +9,7 @@ import serenity.users.UserProtocol.read.{GetUser, UserResponse}
 import serenity.users.UserProtocol.write.{HospesImportCmd, HospesUser, ValidationFailed}
 import serenity.users.domain.{Email, UserId}
 
-class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inPersistenceMemConfig()) {
+class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersistence()) {
   val hospesUser: HospesUser = HospesUser(
     List(),
     List(Email("example@java.no", validated = true)),

@@ -23,7 +23,7 @@ object AkkaConfig {
 
   val default = ConfigFactory.load()
 
-  def inPersistenceMemConfig() =
+  def inMemoryPersistence() =
     ConfigFactory.parseMap(Map(
       "akka.persistence.journal.plugin" -> "inmemory-journal",
       "akka.persistence.snapshot-store.plugin" -> "inmemory-snapshot-store",

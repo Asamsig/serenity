@@ -14,7 +14,7 @@ import serenity.users.domain.{Email, UserId}
 
 import scala.util.Failure
 
-class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.inPersistenceMemConfig())
+class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.inMemoryPersistence())
     with InMemoryCleanup {
 
   def defaultSetup() = new {
