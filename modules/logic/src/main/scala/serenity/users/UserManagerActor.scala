@@ -7,8 +7,9 @@ import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import cqrs.QueryStream.LiveEvents
-import cqrs.cqrs.Cmd
-import cqrs.{TagQueryStream, Tags}
+import serenity.cqrs.Cmd
+import cqrs.TagQueryStream
+import serenity.persistence.Tags
 import serenity.users.UserProtocol.read.{GetUser, GetUserWithEmail}
 import serenity.users.UserProtocol.write._
 import serenity.users.domain._
