@@ -4,12 +4,12 @@ import java.util.UUID
 
 import akka.actor.ActorRef
 import akka.actor.Status.{Failure, Success}
-import serenity.akka.AkkaSuite
+import serenity.akka.{AkkaConfig, AkkaSuite}
 import serenity.users.UserProtocol.read.{GetUser, UserResponse}
 import serenity.users.UserProtocol.write.{HospesImportCmd, HospesUser, ValidationFailed}
 import serenity.users.domain.{Email, UserId}
 
-class UserActorSpec extends AkkaSuite("UserActorSpec") {
+class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inPersistenceMemConfig()) {
   val hospesUser: HospesUser = HospesUser(
     List(),
     List(Email("example@java.no", validated = true)),
@@ -23,14 +23,14 @@ class UserActorSpec extends AkkaSuite("UserActorSpec") {
       val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
       userActor ! HospesImportCmd(hospesUser)
 
-      expectMsg(Success(""))
+      expectMsgClass(classOf[Success])
     }
 
     it("should handle fail when importing same user") {
       val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
 
       userActor ! HospesImportCmd(hospesUser)
-      expectMsg(Success(""))
+      expectMsgClass(classOf[Success])
 
       userActor ! HospesImportCmd(hospesUser)
 
@@ -41,7 +41,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec") {
       val userId: UserId = UUID.randomUUID()
       val userActor: ActorRef = system.actorOf(UserActor(userId))
       userActor ! HospesImportCmd(hospesUser)
-      expectMsg(Success(""))
+      expectMsgClass(classOf[Success])
 
       userActor ! GetUser(userId)
       expectMsgAnyClassOf(classOf[UserResponse])
@@ -51,7 +51,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec") {
       val userId: UserId = UUID.randomUUID()
       val originUserActor: ActorRef = system.actorOf(UserActor(userId))
       originUserActor ! HospesImportCmd(hospesUser)
-      expectMsg(Success(""))
+      expectMsgClass(classOf[Success])
 
       system.stop(originUserActor)
 
