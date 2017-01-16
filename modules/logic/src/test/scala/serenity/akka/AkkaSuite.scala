@@ -26,7 +26,8 @@ object AkkaConfig {
   def inPersistenceMemConfig() =
     ConfigFactory.parseMap(Map(
       "akka.persistence.journal.plugin" -> "inmemory-journal",
-      "akka.persistence.snapshot-store.plugin" -> "inmemory-snapshot-store"
+      "akka.persistence.snapshot-store.plugin" -> "inmemory-snapshot-store",
+      "serenity.persistence.query-journal" -> "inmemory-read-journal"
     ).asJava, "From tests")
         .withFallback(default)
 

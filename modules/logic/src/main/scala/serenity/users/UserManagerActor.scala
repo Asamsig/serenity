@@ -3,7 +3,6 @@ package serenity.users
 import java.util.UUID
 
 import akka.actor.{ActorRef, Props, Stash}
-import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import cqrs.QueryStream.LiveEvents
@@ -16,12 +15,14 @@ import serenity.users.domain._
 
 import scala.util.Failure
 
-class UserManagerActor(userActorProps: UserId => Props, tag: String) extends TagQueryStream with Stash {
+class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream with Stash {
 
-  override val tagName: String = tag
+  override val tagName: String = Tags.USER_EMAIL
 
-  override def journal: CurrentEventsByTagQuery with EventsByTagQuery =
-    PersistenceQuery(context.system).readJournalFor(LeveldbReadJournal.Identifier) //todo config!
+  override def journal: CurrentEventsByTagQuery with EventsByTagQuery = {
+    val journalPluginId = context.system.settings.config.getString("serenity.persistence.query-journal")
+    PersistenceQuery(context.system).readJournalFor(journalPluginId)
+  }
 
   var state = UserManagerState()
 
@@ -38,7 +39,6 @@ class UserManagerActor(userActorProps: UserId => Props, tag: String) extends Tag
     case cmd@HospesImportCmd(usr) =>
       createAccount(cmd, usr.email.head.address)
   }
-
 
   def events: Receive = {
     case EventEnvelope(_, _, _, e) => e match {
@@ -79,8 +79,8 @@ class UserManagerActor(userActorProps: UserId => Props, tag: String) extends Tag
 }
 
 object UserManagerActor {
-  def apply(userActorProps: UserId => Props = UserActor.apply, tagName: String = Tags.USER_EMAIL): Props =
-    Props(classOf[UserManagerActor], userActorProps, tagName)
+  def apply(userActorProps: UserId => Props = UserActor.apply): Props =
+    Props(classOf[UserManagerActor], userActorProps)
 }
 
 case class UserManagerState(
@@ -88,17 +88,17 @@ case class UserManagerState(
     emailToUsers: Map[String, UserId] = Map(),
     usersActor: Map[UserId, ActorRef] = Map()) {
 
-  def createActor(id: UserId, email: String, actorRef: ActorRef) =
+  def createActor(id: UserId, email: String, actorRef: ActorRef): UserManagerState =
     copy(
       usersActor = usersActor + (id -> actorRef),
       pendingUsers = pendingUsers + (email -> id))
 
-  def mailEvent(evt: HospesUserImportEvt) =
+  def mailEvent(evt: HospesUserImportEvt): UserManagerState =
     copy(
       emailToUsers = emailToUsers ++ evt.email.map(_.address -> evt.id),
       pendingUsers = pendingUsers.filter(p => !evt.email.map(_.address).contains(p._1)))
 
-  def mailEvent(evt: UserRegisteredEvt) =
+  def mailEvent(evt: UserRegisteredEvt): UserManagerState =
     copy(
       emailToUsers = emailToUsers + (evt.email -> evt.id),
       pendingUsers = pendingUsers - evt.email)
