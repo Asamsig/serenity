@@ -1,10 +1,9 @@
 package serenity.users
 
-import java.util.Date
-
 import akka.actor.Props
 import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
+import serenity.UtcDateTime.nowUTC
 import serenity.cqrs.Evt
 import serenity.users.UserProtocol.read.{GetUser, UserNotFound, UserResponse}
 import serenity.users.UserProtocol.write._
@@ -38,7 +37,7 @@ class UserActor(id: UserId) extends PersistentActor {
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@CreateUserCmd(email, firstName, lastName) =>
       persist(
-        UserRegisteredEvt(id, email, firstName, lastName, new Date())) {
+        UserRegisteredEvt(id, email, firstName, lastName, nowUTC())) {
         evt =>
           updateUserModel(evt)
           sender() ! Success("")
@@ -69,7 +68,7 @@ object EventToUser {
     evt.email.head,
     evt.email.tail,
     evt.phoneNumber,
-    "now",
+    evt.imported,
     evt.firstName,
     evt.lastName,
     evt.address))
@@ -79,7 +78,7 @@ object EventToUser {
       User(
         uuid = evt.id,
         mainEmail = Email(evt.email, validated = true),
-        createdDate = evt.createdTime.toString,
+        createdDate = evt.createdTime,
         firstName = Some(evt.firstName)
       ))
 

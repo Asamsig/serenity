@@ -1,11 +1,12 @@
 package serenity.users
 
-import java.util.{Date, UUID}
+import java.util.UUID
 
 import akka.actor.{ActorRef, Props}
 import akka.persistence.PersistentActor
 import akka.persistence.query.EventEnvelope
 import akka.testkit.TestProbe
+import serenity.UtcDateTime.nowUTC
 import serenity.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import serenity.users.UserManagerActorFixtures.beerDuke
 import serenity.users.UserProtocol.read.{GetUser, GetUserWithEmail}
@@ -135,7 +136,7 @@ class UsrActor(id: UserId, probeRef: ActorRef) extends PersistentActor {
       evt =>
         probeRef.forward(m)
     }
-    case m: CreateUserCmd => persist(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, new Date())) {
+    case m: CreateUserCmd => persist(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, nowUTC())) {
       evt => probeRef.forward(m)
     }
     case m => probeRef.forward(m)

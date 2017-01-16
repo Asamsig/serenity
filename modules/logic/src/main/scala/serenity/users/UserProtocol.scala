@@ -1,7 +1,8 @@
 package serenity.users
 
-import java.util.Date
+import java.time.LocalDateTime
 
+import serenity.UtcDateTime
 import serenity.cqrs.{Cmd, Evt, Query}
 import serenity.users.domain.{Email, User, UserId}
 
@@ -20,7 +21,7 @@ object UserProtocol {
         email: String,
         firstName: String,
         lastName: String,
-        createdTime: Date = new Date()
+        createdTime: LocalDateTime = UtcDateTime.nowUTC()
     ) extends Evt
 
     case class ValidationFailed(msg: String) extends Exception(msg)
@@ -49,7 +50,8 @@ object UserProtocol {
         firstName: Option[String],
         lastName: Option[String],
         address: Option[String],
-        phoneNumber: Option[String]
+        phoneNumber: Option[String],
+        imported: LocalDateTime = UtcDateTime.nowUTC()
     ) extends Evt
 
     def toHospesUserEvent(id: UserId, hospesUser: HospesUser): HospesUserImportEvt = {

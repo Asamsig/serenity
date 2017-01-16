@@ -1,11 +1,12 @@
 package serenity.users
 
+import java.time.LocalDateTime
 import java.util.UUID
 
 object domain {
 
   type UserId = UUID
-  type DateTime = String
+  type DateTime = LocalDateTime
   type Date = String
 
   case class BasicAuth(
