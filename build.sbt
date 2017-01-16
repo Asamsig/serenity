@@ -4,9 +4,11 @@ version := "0.0.1-SNAPSHOT"
 
 scalaVersion := Versions.scalaVersion
 
-libraryDependencies ++= Dependencies.dependencies
+libraryDependencies ++= Dependencies.playDependencies
 
-lazy val logic = project in file("modules/logic")
+lazy val logic = (project in file("modules/logic"))
+    .settings(scalaVersion := Versions.scalaVersion)
+    .settings(libraryDependencies ++= Dependencies.logicDependencies)
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala)
