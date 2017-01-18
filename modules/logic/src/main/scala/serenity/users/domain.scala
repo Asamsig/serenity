@@ -3,16 +3,32 @@ package serenity.users
 import java.time.LocalDateTime
 import java.util.UUID
 
+import com.mohiva.play.silhouette.api.Identity
+
 object domain {
 
   type UserId = UUID
   type DateTime = LocalDateTime
   type Date = String
 
-  case class BasicAuth(
-      userId: UserId,
+  sealed trait BasicAuth {
+    def password: String
+    def salt: String
+    def validate(pwd: String): Boolean
+  }
+
+  case class HospesAuth(
       password: String,
-      salt: String)
+      salt: String) extends BasicAuth {
+    override def validate(pwd: String): Boolean =
+      HospesPassword.validate(this, pwd)
+  }
+
+  case class SerenityAuth(
+      password: String,
+      salt: String) extends BasicAuth{
+    override def validate(pwd: String): Boolean = ???
+  }
 
   case class Membership(
       from: Date,
@@ -36,7 +52,7 @@ object domain {
       lastName: Option[String] = None,
       address: Option[String] = None,
 
-      memberships: Set[Membership] = Set())
+      memberships: Set[Membership] = Set()) extends Identity
 
   case class Email(
       address: String,

@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.actor.ActorRef
 import akka.actor.Status.{Failure, Success}
 import serenity.akka.{AkkaConfig, AkkaSuite}
-import serenity.users.UserProtocol.read.{GetUser, UserResponse}
+import serenity.users.UserProtocol.read._
 import serenity.users.UserProtocol.write.{HospesImportCmd, HospesUser, ValidationFailed}
 import serenity.users.domain.{Email, UserId}
 
@@ -61,6 +61,39 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
       expectMsgAnyClassOf(classOf[UserResponse])
     }
 
+    it("should return BasicAuth when credentials exists") {
+      val plainPwd = "myS3cr3tPwd"
+      val (pwd, salt) = HospesPassword.createPasswordAndSalt(plainPwd)
+      val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
+      val usr = hospesUser.copy(
+        password_pw = pwd,
+        password_slt = salt
+      )
+      userActor ! HospesImportCmd(usr)
+
+      expectMsgClass(classOf[Success])
+
+      userActor ! GetUserCredentials(usr.email.head.address)
+
+      expectMsgClass(classOf[UserCredentialsResponse])
+    }
+
+    it("should return CredentialsNotFound when credentials doesn't exists ") {
+      val plainPwd = "myS3cr3tPwd"
+      val (pwd, salt) = HospesPassword.createPasswordAndSalt(plainPwd)
+      val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
+      val usr = hospesUser.copy(
+        password_pw = pwd,
+        password_slt = salt
+      )
+      userActor ! HospesImportCmd(usr)
+
+      expectMsgClass(classOf[Success])
+
+      userActor ! GetUserCredentials("some@random.user")
+
+      expectMsg(CredentialsNotFound)
+    }
   }
 
 }
