@@ -14,21 +14,15 @@ object domain {
   sealed trait BasicAuth {
     def password: String
     def salt: String
-    def validate(pwd: String): Boolean
   }
 
   case class HospesAuth(
       password: String,
-      salt: String) extends BasicAuth {
-    override def validate(pwd: String): Boolean =
-      HospesPassword.validate(this, pwd)
-  }
+      salt: String) extends BasicAuth
 
   case class SerenityAuth(
       password: String,
-      salt: String) extends BasicAuth{
-    override def validate(pwd: String): Boolean = ???
-  }
+      salt: String) extends BasicAuth
 
   case class Membership(
       from: Date,
