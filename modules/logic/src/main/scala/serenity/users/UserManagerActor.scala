@@ -6,10 +6,10 @@ import akka.actor.{ActorRef, Props, Stash}
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import cqrs.QueryStream.LiveEvents
-import serenity.cqrs.Cmd
 import cqrs.TagQueryStream
+import serenity.cqrs.Cmd
 import serenity.persistence.Tags
-import serenity.users.UserProtocol.read.{GetUser, GetUserWithEmail}
+import serenity.users.UserProtocol.read.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
 import serenity.users.UserProtocol.write._
 import serenity.users.domain._
 
@@ -51,7 +51,8 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
     }
     case LiveEvents =>
       unstashAll()
-    case m if !live => stash()
+    case m if !live =>
+      stash()
   }
 
   def query: Receive = {
@@ -67,6 +68,19 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
         case None =>
           sender() ! Failure(ValidationFailed("User with email doesn't exist"))
       }
+    case qry@GetUserCredentials(email) => {
+      if (state.pendingUsers.keySet.contains(email)) {
+        stash()
+      } else {
+        (for {
+          (_, id) <- state.emailToUsers.find(_._1 == email)
+          userActor <- state.usersActor.find(_._1 == id).map(_._2)
+        } yield userActor) match {
+          case Some(actor) => actor.forward(qry)
+          case None => sender() ! CredentialsNotFound
+        }
+      }
+    }
   }
 
   def createAccount[C <: Cmd](cmd: C, email: String): Unit = {

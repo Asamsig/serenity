@@ -9,7 +9,7 @@ import akka.testkit.TestProbe
 import serenity.UtcDateTime.nowUTC
 import serenity.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import serenity.users.UserManagerActorFixtures.beerDuke
-import serenity.users.UserProtocol.read.{GetUser, GetUserWithEmail}
+import serenity.users.UserProtocol.read.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
 import serenity.users.UserProtocol.write._
 import serenity.users.domain.{Email, UserId}
 
@@ -108,7 +108,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
         expectMsgClass(classOf[Failure[String]])
       }
 
-      it("should forward message if user is exist") {
+      it("should forward message if user exists") {
         val setup = defaultSetup()
         val query: GetUserWithEmail = GetUserWithEmail(beerDuke.email.head.address)
 
@@ -120,6 +120,28 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
         setup.probe.expectMsgClass(classOf[GetUser])
       }
 
+    }
+
+    describe("GetUserCredentials") {
+      it("should respond with CredentialsNotFound if user doesn't exists") {
+        val setup = defaultSetup()
+
+        setup.actor ! GetUserCredentials("doesnt.exist@java.no")
+
+        expectMsg(CredentialsNotFound)
+      }
+
+      it("should forward message if user exists ") {
+        val setup = defaultSetup()
+        val query: GetUserCredentials = GetUserCredentials(beerDuke.email.head.address)
+
+        val cmd: HospesImportCmd = HospesImportCmd(beerDuke)
+        setup.actor ! cmd
+        setup.probe.expectMsg(cmd)
+
+        setup.actor ! query
+        setup.probe.expectMsgClass(classOf[GetUserCredentials])
+      }
     }
   }
 }
