@@ -63,12 +63,8 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
 
     it("should return BasicAuth when credentials exists") {
       val plainPwd = "myS3cr3tPwd"
-      val (pwd, salt) = HospesPassword.createPasswordAndSalt(plainPwd)
       val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
-      val usr = hospesUser.copy(
-        password_pw = pwd,
-        password_slt = salt
-      )
+      val usr = hospesUser
       userActor ! HospesImportCmd(usr)
 
       expectMsgClass(classOf[Success])
@@ -80,12 +76,8 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
 
     it("should return CredentialsNotFound when credentials doesn't exists ") {
       val plainPwd = "myS3cr3tPwd"
-      val (pwd, salt) = HospesPassword.createPasswordAndSalt(plainPwd)
       val userActor: ActorRef = system.actorOf(UserActor(UUID.randomUUID()))
-      val usr = hospesUser.copy(
-        password_pw = pwd,
-        password_slt = salt
-      )
+      val usr = hospesUser
       userActor ! HospesImportCmd(usr)
 
       expectMsgClass(classOf[Success])
