@@ -26,12 +26,14 @@ class LoginCtrl @Inject()(
     clock: Clock
 ) extends Controller {
 
+  import silhouette.{UnsecuredAction, UserAwareAction}
+
   private val config = configuration.underlying
 
   private val expire: FiniteDuration = config.as[FiniteDuration]("silhouette.authenticator.rememberMe.authenticatorExpiry")
   private val idle: Option[FiniteDuration] = config.getAs[FiniteDuration]("silhouette.authenticator.rememberMe.authenticatorIdleTimeout")
 
-  def login() = silhouette.UnsecuredAction.async(parse.json) { implicit request =>
+  def login() = UnsecuredAction.async(parse.json) { implicit request =>
     val (cred, rememberMe) = toCredentials
     credentialsProvider.authenticate(cred).flatMap { loginInfo =>
       userIdentityService.retrieve(loginInfo).flatMap {
@@ -60,7 +62,7 @@ class LoginCtrl @Inject()(
 
   }
 
-  def logout() = silhouette.UserAwareAction.async { implicit request =>
+  def logout() = UserAwareAction.async { implicit request =>
     (for {
       user <- request.identity
       authenticator <- request.authenticator

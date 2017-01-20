@@ -6,7 +6,7 @@ import javax.inject.{Inject, Named}
 import com.mohiva.play.silhouette.api.util.{PasswordHasher, PasswordInfo}
 import play.api.Configuration
 import serenity.UtcDateTime
-import serenity.users.domain.{Email, User}
+import serenity.users.domain.{AdminRole, Email, User}
 
 import scala.util.Properties._
 
@@ -19,7 +19,8 @@ class AdminUser @Inject()(@Named("bcryptHasher") hasher: PasswordHasher, configu
     mainEmail = Email(envOrConf("email"), validated = true),
     createdDate = UtcDateTime.nowUTC(),
     firstName = Some("admin"),
-    lastName = Some("javaBin")
+    lastName = Some("javaBin"),
+    roles = Set(AdminRole)
   )
 
   lazy val auth: PasswordInfo = hasher.hash(envOrConf("password"))
