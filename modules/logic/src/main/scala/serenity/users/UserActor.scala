@@ -5,13 +5,14 @@ import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
 import serenity.UtcDateTime.nowUTC
 import serenity.cqrs.Evt
-import serenity.users.UserProtocol.read.{GetUser, UserNotFound, UserResponse}
-import serenity.users.UserProtocol.write._
-import serenity.users.domain.{Email, User, UserId}
+import serenity.users.UserProtocol.read._
+import serenity.users.UserProtocol.write.{HospesAuthSource, _}
+import serenity.users.domain._
 
 class UserActor(id: UserId) extends PersistentActor {
 
-  var user: Option[User] = None
+  private var user: Option[User] = None
+  private var credentials: Option[BasicAuth] = None
 
   override def persistenceId: String = s"user-${id.toString}"
 
@@ -25,14 +26,15 @@ class UserActor(id: UserId) extends PersistentActor {
       sender() ! Failure(ValidationFailed("User exist"))
     case HospesImportCmd(hospesUser) =>
       persistAll(List(
-        toHospesUserEvent(id, hospesUser)
-        // todo other events!
+        toHospesUserEvent(id, hospesUser),
+        BasicAuthEvt(id, hospesUser.password_pw, hospesUser.password_slt, HospesAuthSource)
       )) {
         case evt: HospesUserImportEvt =>
           updateUserModel(evt)
           sender() ! Success("User created")
+        case evt: BasicAuthEvt =>
+          credentials = Some(HospesAuth(evt.password, evt.salt))
       }
-
     case cmd@CreateUserCmd(email, _, _) if user.isDefined =>
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@CreateUserCmd(email, firstName, lastName) =>
@@ -42,12 +44,20 @@ class UserActor(id: UserId) extends PersistentActor {
           updateUserModel(evt)
           sender() ! Success("")
       }
-    case GetUser(queriedId) if id != queriedId => sender() ! UserNotFound
-    case GetUser(queriedId) => sender() ! user.map(UserResponse).getOrElse(UserNotFound)
+    case GetUser(queriedId) =>
+      if (id != queriedId) sender() ! UserNotFound
+      else sender() ! user.map(UserResponse).getOrElse(UserNotFound)
+    case GetUserCredentials(cred) =>
+      if (hasEmail(cred)) sender() ! credentials.map(UserCredentialsResponse).getOrElse(CredentialsNotFound)
+      else sender() ! CredentialsNotFound
     case m@_ => sender() ! Failure(new IllegalArgumentException("Unhandled message"))
   }
 
-  def updateUserModel(evt: Evt) = evt match  {
+  private def hasEmail(email: String): Boolean =
+    user.exists(_.emails.exists(_.address == email)) ||
+        user.exists(_.mainEmail.address == email)
+
+  private def updateUserModel(evt: Evt) = evt match {
     case evt: HospesUserImportEvt => user = EventToUser(evt)
     case evt: UserRegisteredEvt => user = EventToUser(evt)
     case _ =>
@@ -73,7 +83,7 @@ object EventToUser {
     evt.lastName,
     evt.address))
 
-  def apply(evt: UserRegisteredEvt): Option[User]= {
+  def apply(evt: UserRegisteredEvt): Option[User] = {
     Some(
       User(
         uuid = evt.id,

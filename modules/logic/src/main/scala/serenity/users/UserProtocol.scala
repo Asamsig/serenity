@@ -4,7 +4,7 @@ import java.time.LocalDateTime
 
 import serenity.UtcDateTime
 import serenity.cqrs.{Cmd, Evt, Query}
-import serenity.users.domain.{Email, User, UserId}
+import serenity.users.domain.{BasicAuth, Email, User, UserId}
 
 object UserProtocol {
 
@@ -43,6 +43,18 @@ object UserProtocol {
 
     case class HospesImportCmd(user: HospesUser) extends Cmd
 
+    case class BasicAuthEvt(
+        id: UserId,
+        password: String,
+        salt: String,
+        source: AuthSource = SerenityAuthSource) extends Evt
+
+    sealed trait AuthSource
+
+    case object SerenityAuthSource extends AuthSource
+
+    case object HospesAuthSource extends AuthSource
+
     case class HospesUserImportEvt(
         id: UserId,
         originId: List[Int],
@@ -73,9 +85,15 @@ object UserProtocol {
 
     case class GetUserWithEmail(value: String) extends Query
 
+    case class GetUserCredentials(email: String) extends Query
+
+    case class UserCredentialsResponse(user: BasicAuth) extends Query
+
     case class UserResponse(user: User)
 
     case object UserNotFound
+
+    case object CredentialsNotFound
 
   }
 

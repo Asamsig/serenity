@@ -3,16 +3,26 @@ package serenity.users
 import java.time.LocalDateTime
 import java.util.UUID
 
+import com.mohiva.play.silhouette.api.Identity
+
 object domain {
 
   type UserId = UUID
   type DateTime = LocalDateTime
   type Date = String
 
-  case class BasicAuth(
-      userId: UserId,
+  sealed trait BasicAuth {
+    def password: String
+    def salt: String
+  }
+
+  case class HospesAuth(
       password: String,
-      salt: String)
+      salt: String) extends BasicAuth
+
+  case class SerenityAuth(
+      password: String,
+      salt: String) extends BasicAuth
 
   case class Membership(
       from: Date,
@@ -36,10 +46,30 @@ object domain {
       lastName: Option[String] = None,
       address: Option[String] = None,
 
-      memberships: Set[Membership] = Set())
+      roles: Set[Role] = Set(),
+      memberships: Set[Membership] = Set()) extends Identity
 
   case class Email(
       address: String,
       validated: Boolean)
+
+  trait Role {
+    def name: String
+  }
+
+  object Role {
+    def apply(role: String) = role match {
+      case AdminRole.name => AdminRole
+      case _ => UnknownRole
+    }
+  }
+
+  case object AdminRole extends Role {
+    val name = "admin"
+  }
+
+  case object UnknownRole extends Role {
+    val name = "-"
+  }
 
 }
