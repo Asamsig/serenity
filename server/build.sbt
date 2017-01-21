@@ -1,10 +1,11 @@
 name := "serenity"
 
-version := "0.0.1-SNAPSHOT"
+version in ThisBuild := "0.0.1-SNAPSHOT"
 
-scalaVersion := Versions.scalaVersion
+scalaVersion in ThisBuild  := Versions.scalaVersion
 
-libraryDependencies ++= Dependencies.playDependencies
+resolvers in ThisBuild += "Atlassian Releases" at "https://maven.atlassian.com/public/"
+resolvers in ThisBuild += Resolver.jcenterRepo
 
 lazy val logic = (project in file("modules/logic"))
     .settings(scalaVersion := Versions.scalaVersion)
@@ -12,5 +13,8 @@ lazy val logic = (project in file("modules/logic"))
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala)
+    .settings(
+      libraryDependencies ++= Dependencies.playDependencies
+    )
     .dependsOn(logic)
     .aggregate(logic)
