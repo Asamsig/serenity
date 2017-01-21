@@ -2,7 +2,7 @@ package setup
 
 import javax.inject.Inject
 
-import controller.{AuthCtrl, HospesImportCtrl, LoginCtrl, PingCtrl}
+import controller.{HospesImportCtrl, LoginCtrl, PingCtrl}
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
 import play.api.routing.{Router, SimpleRouter}
