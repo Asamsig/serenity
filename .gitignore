@@ -1,4 +1,11 @@
 .idea/
 
+server/project/.ivy
+server/project/.boot
+
 logs/
 target/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
