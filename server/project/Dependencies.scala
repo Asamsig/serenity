@@ -4,6 +4,7 @@ object Versions {
   val akka = "2.4.11"
   val silhouette = "4.0.0"
   val scalaVersion = "2.11.8"
+  val protoBuf = "3.1.0"
 }
 
 object Dependencies {
@@ -14,8 +15,10 @@ object Dependencies {
   private val persistence = akka ++ Seq(
     "com.typesafe.akka" %% "akka-persistence" % Versions.akka,
     "com.typesafe.akka" %% "akka-persistence-query-experimental" % Versions.akka,
+    "com.typesafe.akka" %% "akka-remote" % Versions.akka,
     "org.iq80.leveldb" % "leveldb" % "0.7",
-    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8"
+    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
+    "com.google.protobuf" % "protobuf-java" % Versions.protoBuf
   )
 
   private val test = Seq(
