@@ -8,13 +8,13 @@ resolvers in ThisBuild += "Atlassian Releases" at "https://maven.atlassian.com/p
 resolvers in ThisBuild += Resolver.jcenterRepo
 
 lazy val logic = (project in file("modules/logic"))
-    .settings(scalaVersion := Versions.scalaVersion)
     .settings(libraryDependencies ++= Dependencies.logicDependencies)
 
 lazy val root = (project in file("."))
-    .enablePlugins(PlayScala)
+    .enablePlugins(PlayScala, ElasticBeanstalkPlugin)
     .settings(
       libraryDependencies ++= Dependencies.playDependencies
     )
+    .settings(dockerExposedPorts := Seq(9000))
     .dependsOn(logic)
     .aggregate(logic)
