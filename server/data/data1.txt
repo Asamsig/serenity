@@ -1,0 +1,43 @@
+{
+    "config" : {
+        "action" : "order.updated",
+        "user_id" : "196353420507",
+        "endpoint_url" : "https://hamnis.localtunnel.me/eventbrite/webhook",
+        "webhook_id" : "307856"
+    },
+    "api_url" : "https://www.eventbriteapi.com/v3/orders/588656399/"
+}
+WebhookEvent(https://www.eventbriteapi.com/v3/orders/588656399/,OrderUpdated)
+
+{
+    "config" : {
+        "action" : "order.placed",
+        "user_id" : "196353420507",
+        "endpoint_url" : "https://hamnis.localtunnel.me/eventbrite/webhook",
+        "webhook_id" : "307856"
+    },
+    "api_url" : "https://www.eventbriteapi.com/v3/orders/588656399/"
+}
+WebhookEvent(https://www.eventbriteapi.com/v3/orders/588656399/,OrderPlaced)
+
+{
+    "config" : {
+        "action" : "attendee.updated",
+        "user_id" : "196353420507",
+        "endpoint_url" : "https://hamnis.localtunnel.me/eventbrite/webhook",
+        "webhook_id" : "307856"
+    },
+    "api_url" : "https://www.eventbriteapi.com/v3/events/29971845597/attendees/739363823/"
+}
+WebhookEvent(https://www.eventbriteapi.com/v3/events/29971845597/attendees/739363823/,AttendeeUpdated)
+
+{
+    "config" : {
+        "action" : "order.updated",
+        "user_id" : "196353420507",
+        "endpoint_url" : "https://hamnis.localtunnel.me/eventbrite/webhook",
+        "webhook_id" : "307856"
+    },
+    "api_url" : "https://www.eventbriteapi.com/v3/orders/588656399/"
+}
+WebhookEvent(https://www.eventbriteapi.com/v3/orders/588656399/,OrderUpdated)
