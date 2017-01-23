@@ -17,6 +17,8 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-persistence-query-experimental" % Versions.akka,
     "com.typesafe.akka" %% "akka-remote" % Versions.akka,
     "org.iq80.leveldb" % "leveldb" % "0.7",
+    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.12",
+    "org.postgresql" % "postgresql" % "9.4.1212",
     "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
     "com.google.protobuf" % "protobuf-java" % Versions.protoBuf
   )
