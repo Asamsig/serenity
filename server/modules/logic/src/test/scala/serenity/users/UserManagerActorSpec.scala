@@ -6,11 +6,11 @@ import akka.actor.{ActorRef, Props}
 import akka.persistence.PersistentActor
 import akka.persistence.query.EventEnvelope
 import akka.testkit.TestProbe
-import serenity.UtcDateTime.nowUTC
 import serenity.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
+import serenity.cqrs.EventMeta
 import serenity.users.UserManagerActorFixtures.beerDuke
-import serenity.users.UserProtocol.read.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
-import serenity.users.UserProtocol.write._
+import serenity.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
+import serenity.users.UserWriteProtocol._
 import serenity.users.domain.{Email, UserId}
 
 import scala.util.Failure
@@ -96,7 +96,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
     def withEnvelope(cmd: HospesImportCmd): EventEnvelope = {
       EventEnvelope(
         1, "", 2,
-        UserProtocol.write.toHospesUserEvent(UUID.randomUUID(), cmd.user))
+        UserWriteProtocol.toHospesUserEvent(UUID.randomUUID(), cmd.user))
     }
 
     describe("GetUserWithEmail") {
@@ -158,7 +158,7 @@ class UsrActor(id: UserId, probeRef: ActorRef) extends PersistentActor {
       evt =>
         probeRef.forward(m)
     }
-    case m: CreateUserCmd => persist(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, nowUTC())) {
+    case m: CreateUserCmd => persist(UserRegisteredEvt(id, m.email, m.firstName, m.lastName, EventMeta())) {
       evt => probeRef.forward(m)
     }
     case m => probeRef.forward(m)

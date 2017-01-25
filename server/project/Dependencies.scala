@@ -44,5 +44,6 @@ object Dependencies {
 
   val playDependencies = akka ++ test ++ silhouette ++ root
 
-  val logicDependencies = akka ++ persistence ++ test ++ silhouette
+  val logicDependencies = akka ++ persistence ++ test ++ silhouette ++
+      Seq("com.trueaccord.scalapb" %% "scalapb-runtime" % com.trueaccord.scalapb.compiler.Version.scalapbVersion % "protobuf")
 }

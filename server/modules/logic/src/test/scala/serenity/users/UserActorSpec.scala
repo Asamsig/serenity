@@ -5,8 +5,8 @@ import java.util.UUID
 import akka.actor.ActorRef
 import akka.actor.Status.{Failure, Success}
 import serenity.akka.{AkkaConfig, AkkaSuite}
-import serenity.users.UserProtocol.read._
-import serenity.users.UserProtocol.write.{HospesImportCmd, HospesUser, ValidationFailed}
+import serenity.users.UserReadProtocol._
+import serenity.users.UserWriteProtocol.{HospesImportCmd, HospesUser, ValidationFailed}
 import serenity.users.domain.{Email, UserId}
 
 class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersistence()) {

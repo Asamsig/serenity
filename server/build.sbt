@@ -9,6 +9,10 @@ resolvers in ThisBuild += Resolver.jcenterRepo
 
 lazy val logic = (project in file("modules/logic"))
     .settings(libraryDependencies ++= Dependencies.logicDependencies)
+    .settings(PB.targets in Compile := Seq(
+      PB.gens.java -> (sourceManaged in Compile).value,
+      scalapb.gen(javaConversions=true) -> (sourceManaged in Compile).value
+    ))
 
 lazy val root = (project in file("."))
     .enablePlugins(PlayScala, ElasticBeanstalkPlugin)

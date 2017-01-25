@@ -3,10 +3,9 @@ package serenity.users
 import akka.actor.Props
 import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
-import serenity.UtcDateTime.nowUTC
-import serenity.cqrs.Evt
-import serenity.users.UserProtocol.read._
-import serenity.users.UserProtocol.write.{HospesAuthSource, _}
+import serenity.cqrs.{EventMeta, Evt}
+import serenity.users.UserReadProtocol._
+import serenity.users.UserWriteProtocol.{HospesAuthSource, _}
 import serenity.users.domain._
 
 class UserActor(id: UserId) extends PersistentActor {
@@ -39,7 +38,7 @@ class UserActor(id: UserId) extends PersistentActor {
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@CreateUserCmd(email, firstName, lastName) =>
       persist(
-        UserRegisteredEvt(id, email, firstName, lastName, nowUTC())) {
+        UserRegisteredEvt(id, email, firstName, lastName, EventMeta())) {
         evt =>
           updateUserModel(evt)
           sender() ! Success("")
@@ -78,7 +77,7 @@ object EventToUser {
     evt.email.head,
     evt.email.tail,
     evt.phoneNumber,
-    evt.imported,
+    evt.meta.created,
     evt.firstName,
     evt.lastName,
     evt.address))
@@ -88,7 +87,7 @@ object EventToUser {
       User(
         uuid = evt.id,
         mainEmail = Email(evt.email, validated = true),
-        createdDate = evt.createdTime,
+        createdDate = evt.meta.created,
         firstName = Some(evt.firstName)
       ))
 

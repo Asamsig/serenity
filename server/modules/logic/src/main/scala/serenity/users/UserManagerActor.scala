@@ -2,22 +2,24 @@ package serenity.users
 
 import java.util.UUID
 
-import akka.actor.{ActorRef, Props, Stash}
+import akka.actor.{ActorLogging, ActorRef, Props, Stash}
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import cqrs.QueryStream.LiveEvents
 import cqrs.TagQueryStream
 import serenity.cqrs.Cmd
-import serenity.persistence.Tags
-import serenity.users.UserProtocol.read.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
-import serenity.users.UserProtocol.write._
+import serenity.persistence.{DomainReadEventAdapter, Tags}
+import serenity.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
+import serenity.users.UserWriteProtocol._
 import serenity.users.domain._
 
 import scala.util.Failure
 
-class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream with Stash {
+class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream with Stash with ActorLogging{
 
   override val tagName: String = Tags.USER_EMAIL
+
+  val toMsg = new DomainReadEventAdapter
 
   override def journal: CurrentEventsByTagQuery with EventsByTagQuery = {
     val journalPluginId = context.system.settings.config.getString("serenity.persistence.query-journal")
@@ -41,15 +43,18 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
   }
 
   def events: Receive = {
-    case EventEnvelope(_, _, _, e) => e match {
+    case ee@EventEnvelope(_, _, _, e) => toMsg.fromMessage(e) match {
       case u: HospesUserImportEvt =>
         state = state.mailEvent(u)
         if (live) unstashAll()
       case u: UserRegisteredEvt =>
         state = state.mailEvent(u)
         if (live) unstashAll()
+      case m =>
+        unhandled(ee)
     }
     case LiveEvents =>
+      log.info(s"Loaded ${state.emailToUsers.values.toSet.size} users")
       unstashAll()
     case m if !live =>
       stash()

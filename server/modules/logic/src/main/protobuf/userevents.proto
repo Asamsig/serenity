@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package serenity.protobuf;
+
+import "google/protobuf/timestamp.proto";
+import "uuid.proto";
+
+message EventMetaMessage {
+    google.protobuf.Timestamp created = 1;
+}
+
+message EmailMessage {
+    string address = 1;
+    bool validated = 2;
+}
+
+message HospesUserImportMessage {
+    UUID id = 1;
+    repeated int32 origin_id = 2;
+    repeated EmailMessage emails = 3;
+    string first_name = 4;
+    string last_name = 5;
+    string address = 6;
+    string phone_number = 7;
+    EventMetaMessage meta = 8;
+}
+
+message UserRegisteredMessage {
+    UUID id = 1;
+    EmailMessage email = 2;
+    string first_name = 3;
+    string last_name = 4;
+    EventMetaMessage meta = 5;
+}
+
+message BasicAuthMessage {
+    UUID id = 1;
+    string password = 2;
+    string salt = 3;
+    enum AuthSourceEnum {
+        HOSPES = 0;
+        SERENITY = 2;
+    }
+    AuthSourceEnum source = 4;
+    EventMetaMessage meta = 5;
+}
+
+

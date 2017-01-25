@@ -5,9 +5,9 @@ import java.time.LocalDateTime
 import serenity.UtcDateTime
 
 trait Evt {
-  def meta(): EventMeta = EventMeta(UtcDateTime.nowUTC())
+  def meta(): EventMeta
 }
 trait Cmd
 trait Query
 
-case class EventMeta(created: LocalDateTime)
+case class EventMeta(created: LocalDateTime = UtcDateTime.nowUTC())
