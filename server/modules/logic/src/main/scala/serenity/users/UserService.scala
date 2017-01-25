@@ -5,7 +5,7 @@ import javax.inject.{Inject, Named}
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
-import serenity.users.UserProtocol.read._
+import serenity.users.UserReadProtocol._
 import serenity.users.domain.{BasicAuth, User}
 
 import scala.concurrent.duration.DurationDouble

@@ -1,7 +1,7 @@
 package serenity.hospesimport
 
 import serenity.hospesimport.model.{MembershipJson, PersonJson}
-import serenity.users.UserProtocol.write.{HospesImportCmd, HospesMembership, HospesUser}
+import serenity.users.UserWriteProtocol.{HospesImportCmd, HospesMembership, HospesUser}
 import serenity.users.domain.Email
 
 
