@@ -7,9 +7,12 @@ import akka.pattern.ask
 import akka.util.Timeout
 import auth.{DefaultEnv, WithRole}
 import com.mohiva.play.silhouette.api.Silhouette
+import controller.helpers.RouterCtrl
 import play.api.libs.json._
 import play.api.mvc.BodyParsers.parse
 import play.api.mvc.{Result, Results}
+import play.api.routing.Router
+import play.api.routing.sird._
 import serenity.hospesimport.ImportFromHospes
 import serenity.hospesimport.model.{MembershipJson, PersonJson}
 import serenity.users.domain.AdminRole
@@ -22,7 +25,11 @@ import scala.util.{Failure, Success, Try}
 class HospesImportCtrl @Inject()(
     @Named("UserManagerActor") userManagerActor: ActorRef,
     silhouette: Silhouette[DefaultEnv])(
-    implicit ec: ExecutionContext) extends HospesImportCtrlFormats {
+    implicit ec: ExecutionContext) extends HospesImportCtrlFormats with RouterCtrl{
+
+  override def withRoutes(): Router.Routes = {
+    case POST(p"/hospes/import") => importData()
+  }
 
   import silhouette.SecuredAction
 
