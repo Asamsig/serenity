@@ -16,7 +16,7 @@ class UserActor(id: UserId) extends PersistentActor {
   override def persistenceId: String = s"user-${id.toString}"
 
   override def receiveRecover: Receive = {
-    case msg: UserRegisteredEvt => updateUserModel(msg)
+    case msg: UserUpdatedEvt => updateUserModel(msg)
     case msg: HospesUserImportEvt => updateUserModel(msg)
   }
 
@@ -34,11 +34,10 @@ class UserActor(id: UserId) extends PersistentActor {
         case evt: BasicAuthEvt =>
           credentials = Some(HospesAuth(evt.password, evt.salt))
       }
-    case cmd@CreateUserCmd(email, _, _) if user.isDefined =>
-      sender() ! Failure(ValidationFailed("User exist"))
-    case cmd@CreateUserCmd(email, firstName, lastName) =>
+    case cmd@CreateOrUpdateUserCmd(attendee) =>
+      val p = attendee.profile
       persist(
-        UserRegisteredEvt(id, email, firstName, lastName, EventMeta())) {
+        UserUpdatedEvt(id, p.email, p.firstName, p.lastName, EventMeta())) {
         evt =>
           updateUserModel(evt)
           sender() ! Success("")
@@ -58,7 +57,7 @@ class UserActor(id: UserId) extends PersistentActor {
 
   private def updateUserModel(evt: Evt) = evt match {
     case evt: HospesUserImportEvt => user = EventToUser(evt)
-    case evt: UserRegisteredEvt => user = EventToUser(evt)
+    case evt: UserUpdatedEvt => user = EventToUser(evt)
     case _ =>
   }
 
@@ -82,7 +81,7 @@ object EventToUser {
     evt.lastName,
     evt.address))
 
-  def apply(evt: UserRegisteredEvt): Option[User] = {
+  def apply(evt: UserUpdatedEvt): Option[User] = {
     Some(
       User(
         uuid = evt.id,

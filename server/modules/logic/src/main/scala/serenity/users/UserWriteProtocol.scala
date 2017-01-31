@@ -1,17 +1,16 @@
 package serenity.users
 
 import serenity.cqrs.{Cmd, EventMeta, Evt}
+import serenity.eventbrite.Attendee
 import serenity.users.domain.{Email, UserId}
 
 object UserWriteProtocol {
 
-  case class CreateUserCmd(
-      email: String,
-      firstName: String,
-      lastName: String
+  case class CreateOrUpdateUserCmd(
+      attendee: Attendee
   ) extends Cmd
 
-  case class UserRegisteredEvt(
+  case class UserUpdatedEvt(
       id: UserId,
       email: String,
       firstName: String,

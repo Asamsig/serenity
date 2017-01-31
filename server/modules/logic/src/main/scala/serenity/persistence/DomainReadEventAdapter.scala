@@ -4,15 +4,15 @@ import akka.persistence.journal.EventSeq
 import com.google.protobuf.Message
 import serenity.cqrs.Evt
 import serenity.persistence.protobuf.ProtobufReadEventAdapter
-import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, UserRegisteredEvt}
+import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, UserUpdatedEvt}
 
 class DomainReadEventAdapter extends ProtobufReadEventAdapter {
 
   import DomainProtobufFormats._
 
   override def fromJournal(event: Any, manifest: String): EventSeq = event match {
-    case proto: Message if manifest == classOf[UserRegisteredEvt].getSimpleName =>
-      deserialize[UserRegisteredEvt](proto)
+    case proto: Message if manifest == classOf[UserUpdatedEvt].getSimpleName =>
+      deserialize[UserUpdatedEvt](proto)
     case proto: Message if manifest == classOf[HospesUserImportEvt].getSimpleName =>
       deserialize[HospesUserImportEvt](proto)
     case proto: Message if manifest == classOf[BasicAuthEvt].getSimpleName =>

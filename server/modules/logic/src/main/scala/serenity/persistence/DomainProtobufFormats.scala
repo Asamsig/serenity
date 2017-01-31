@@ -98,11 +98,11 @@ object DomainProtobufFormats {
       ))
   }
 
-  implicit val userRegisteredPBP = new ProtobufFormat[UserRegisteredEvt] {
-    override def read(proto: Message): UserRegisteredEvt = proto match {
+  implicit val userRegisteredPBP = new ProtobufFormat[UserUpdatedEvt] {
+    override def read(proto: Message): UserUpdatedEvt = proto match {
       case jm: Userevents.UserRegisteredMessage =>
         val m = UserRegisteredMessage.fromJavaProto(jm)
-        UserRegisteredEvt(
+        UserUpdatedEvt(
           m.id,
           m.email.map(em => Email(em.address, em.validated)).get.address,
           m.firstName,
@@ -111,7 +111,7 @@ object DomainProtobufFormats {
         )
     }
 
-    override def write(e: UserRegisteredEvt): Message =
+    override def write(e: UserUpdatedEvt): Message =
       UserRegisteredMessage.toJavaProto(UserRegisteredMessage(
         e.id,
         Some(EmailMessage(e.email, true)),

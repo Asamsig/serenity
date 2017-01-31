@@ -1,14 +1,22 @@
 package serenity.eventbrite
 
-import javax.inject.Inject
+import javax.inject.{Inject, Named}
 
+import akka.actor.ActorRef
+import akka.util.Timeout
 import play.api.Logger
 import serenity.eventbrite.EventbriteHandleStatus.{Failure, NotSupported, Success}
+import serenity.users.UserWriteProtocol.CreateOrUpdateUserCmd
 
+import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
 
-class EventbriteService @Inject()(client: EventbriteClient)(implicit ec: ExecutionContext) {
+class EventbriteService @Inject()(
+    client: EventbriteClient,
+    @Named("UserManagerActor") userManagerActor: ActorRef )
+    (implicit ec: ExecutionContext) {
 
+  implicit val timeout: Timeout = 120.seconds
   type Status = EventbriteHandleStatus.Status
   val logger = Logger(getClass)
 
@@ -19,7 +27,7 @@ class EventbriteService @Inject()(client: EventbriteClient)(implicit ec: Executi
       case "attendee.updated" =>
         val result = client.attendee(webhook.details.apiUrl)
             .map(attendee => {
-              //todo create command
+              userManagerActor ! CreateOrUpdateUserCmd(attendee)
               logger.debug(s"Found attendee $attendee")
               Success
             })

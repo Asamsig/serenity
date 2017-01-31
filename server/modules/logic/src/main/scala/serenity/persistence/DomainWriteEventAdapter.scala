@@ -2,7 +2,7 @@ package serenity.persistence
 
 import serenity.cqrs.Evt
 import serenity.persistence.protobuf.ProtobufWriteEventAdapter
-import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, UserRegisteredEvt}
+import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, UserUpdatedEvt}
 
 class DomainWriteEventAdapter extends ProtobufWriteEventAdapter {
 
@@ -16,7 +16,7 @@ class DomainWriteEventAdapter extends ProtobufWriteEventAdapter {
   override def toJournal(event: Any): Any = event match {
     case evt:HospesUserImportEvt =>
       serializeTagged(evt, Set(Tags.USER_EMAIL))
-    case evt:UserRegisteredEvt =>
+    case evt:UserUpdatedEvt =>
       serializeTagged(evt, Set(Tags.USER_EMAIL))
     case evt:BasicAuthEvt =>
       serializeTagged(evt)
