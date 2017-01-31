@@ -1,3 +1,5 @@
+import com.trueaccord.scalapb.compiler.{Version => SbVersion}
+import play.sbt.PlayImport
 import sbt._
 
 object Versions {
@@ -44,6 +46,7 @@ object Dependencies {
 
   val playDependencies = akka ++ test ++ silhouette ++ root
 
-  val logicDependencies = akka ++ persistence ++ test ++ silhouette ++
-      Seq("com.trueaccord.scalapb" %% "scalapb-runtime" % com.trueaccord.scalapb.compiler.Version.scalapbVersion % "protobuf")
+  val logicDependencies = akka ++ persistence ++ test ++ silhouette ++ Seq(
+    "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf",
+    PlayImport.ws)
 }
