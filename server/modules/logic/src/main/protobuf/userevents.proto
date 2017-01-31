@@ -22,15 +22,16 @@ message HospesUserImportMessage {
     string last_name = 5;
     string address = 6;
     string phone_number = 7;
-    EventMetaMessage meta = 8;
+    EventMetaMessage meta = 20;
 }
 
-message UserRegisteredMessage {
+message UserUpdatedMessage {
     UUID id = 1;
     EmailMessage email = 2;
     string first_name = 3;
     string last_name = 4;
-    EventMetaMessage meta = 5;
+    string phone = 5;
+    EventMetaMessage meta = 20;
 }
 
 message BasicAuthMessage {
@@ -42,7 +43,7 @@ message BasicAuthMessage {
         SERENITY = 2;
     }
     AuthSourceEnum source = 4;
-    EventMetaMessage meta = 5;
+    EventMetaMessage meta = 20;
 }
 
 

@@ -15,6 +15,7 @@ object UserWriteProtocol {
       email: String,
       firstName: String,
       lastName: String,
+      phone: String,
       meta: EventMeta
   ) extends Evt
 

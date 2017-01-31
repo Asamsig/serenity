@@ -14,6 +14,8 @@ import serenity.protobuf.uuid.{UUID => PUUID}
 import serenity.users.UserWriteProtocol._
 import serenity.users.domain.Email
 
+import scala.language.implicitConversions
+
 object DomainProtobufFormats {
   implicit def javaUuidToProtoUuid(id: UUID): Option[PUUID] =
     Some(PUUID(id.getMostSignificantBits, id.getLeastSignificantBits))
@@ -100,23 +102,25 @@ object DomainProtobufFormats {
 
   implicit val userRegisteredPBP = new ProtobufFormat[UserUpdatedEvt] {
     override def read(proto: Message): UserUpdatedEvt = proto match {
-      case jm: Userevents.UserRegisteredMessage =>
-        val m = UserRegisteredMessage.fromJavaProto(jm)
+      case jm: Userevents.UserUpdatedMessage =>
+        val m = UserUpdatedMessage.fromJavaProto(jm)
         UserUpdatedEvt(
           m.id,
           m.email.map(em => Email(em.address, em.validated)).get.address,
           m.firstName,
           m.lastName,
+          m.phone,
           m.meta
         )
     }
 
     override def write(e: UserUpdatedEvt): Message =
-      UserRegisteredMessage.toJavaProto(UserRegisteredMessage(
+      UserUpdatedMessage.toJavaProto(UserUpdatedMessage(
         e.id,
-        Some(EmailMessage(e.email, true)),
+        Some(EmailMessage(e.email, validated = true)),
         e.firstName,
         e.lastName,
+        e.phone,
         e.meta
       ))
   }

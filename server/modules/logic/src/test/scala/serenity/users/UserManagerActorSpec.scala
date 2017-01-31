@@ -165,7 +165,7 @@ class UsrActor(id: UserId, probeRef: ActorRef) extends PersistentActor {
       }
     case m: CreateOrUpdateUserCmd =>
       val p = m.attendee.profile
-      persist(UserUpdatedEvt(id, p.email, p.firstName, p.lastName, EventMeta())) {
+      persist(UserUpdatedEvt(id, p.email, p.firstName, p.lastName, p.phone, EventMeta())) {
         evt => probeRef.forward(m)
       }
     case m => probeRef.forward(m)

@@ -37,7 +37,7 @@ class UserActor(id: UserId) extends PersistentActor {
     case cmd@CreateOrUpdateUserCmd(attendee) =>
       val p = attendee.profile
       persist(
-        UserUpdatedEvt(id, p.email, p.firstName, p.lastName, EventMeta())) {
+        UserUpdatedEvt(id, p.email, p.firstName, p.lastName,p.phone, EventMeta())) {
         evt =>
           updateUserModel(evt)
           sender() ! Success("")
@@ -57,7 +57,7 @@ class UserActor(id: UserId) extends PersistentActor {
 
   private def updateUserModel(evt: Evt) = evt match {
     case evt: HospesUserImportEvt => user = EventToUser(evt)
-    case evt: UserUpdatedEvt => user = EventToUser(evt)
+    case evt: UserUpdatedEvt => user = EventToUser(evt, user)
     case _ =>
   }
 
@@ -81,14 +81,18 @@ object EventToUser {
     evt.lastName,
     evt.address))
 
-  def apply(evt: UserUpdatedEvt): Option[User] = {
-    Some(
+  def apply(evt: UserUpdatedEvt, user: Option[User]): Option[User] = {
+    user.map(_.copy(
+      firstName = Some(evt.firstName),
+      lastName = Some(evt.lastName)
+    )).orElse(Some(
       User(
         uuid = evt.id,
         mainEmail = Email(evt.email, validated = true),
         createdDate = evt.meta.created,
-        firstName = Some(evt.firstName)
-      ))
+        firstName = Some(evt.firstName),
+        lastName = Some(evt.lastName)
+      )))
 
   }
 }
