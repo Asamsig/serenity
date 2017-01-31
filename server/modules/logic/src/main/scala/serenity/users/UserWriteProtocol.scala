@@ -1,5 +1,7 @@
 package serenity.users
 
+import java.time.LocalDate
+
 import serenity.cqrs.{Cmd, EventMeta, Evt}
 import serenity.eventbrite.Attendee
 import serenity.users.domain.{Email, UserId}
@@ -47,9 +49,7 @@ object UserWriteProtocol {
   ) extends Evt
 
   sealed trait AuthSource
-
   case object SerenityAuthSource extends AuthSource
-
   case object HospesAuthSource extends AuthSource
 
   case class HospesUserImportEvt(
@@ -74,6 +74,24 @@ object UserWriteProtocol {
       hospesUser.phonenumber
     )
   }
+
+  object MembershipAction extends Enumeration {
+    type Action = Value
+    val Add = Value
+    val Remove = Value
+  }
+
+  object MembershipIssuer extends Enumeration {
+    type Issuer = Value
+    val JavaZone = Value
+    val JavaBin = Value
+  }
+  case class MembershipUpdateEvt(
+      from: LocalDate,
+      action: MembershipAction.Action,
+      issuer: MembershipIssuer.Issuer,
+      meta: EventMeta = EventMeta()
+  ) extends Evt
 
 }
 

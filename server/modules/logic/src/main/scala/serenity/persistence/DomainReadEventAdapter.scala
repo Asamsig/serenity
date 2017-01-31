@@ -4,7 +4,7 @@ import akka.persistence.journal.EventSeq
 import com.google.protobuf.Message
 import serenity.cqrs.Evt
 import serenity.persistence.protobuf.ProtobufReadEventAdapter
-import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, UserUpdatedEvt}
+import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, MembershipUpdateEvt, UserUpdatedEvt}
 
 class DomainReadEventAdapter extends ProtobufReadEventAdapter {
 
@@ -17,6 +17,8 @@ class DomainReadEventAdapter extends ProtobufReadEventAdapter {
       deserialize[HospesUserImportEvt](proto)
     case proto: Message if manifest == classOf[BasicAuthEvt].getSimpleName =>
       deserialize[BasicAuthEvt](proto)
+    case proto: Message if manifest == classOf[MembershipUpdateEvt].getSimpleName =>
+      deserialize[MembershipUpdateEvt](proto)
     case evt: Evt =>
       EventSeq.single(evt)
     case _ =>

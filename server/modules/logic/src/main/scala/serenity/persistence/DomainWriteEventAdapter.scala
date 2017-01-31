@@ -2,7 +2,7 @@ package serenity.persistence
 
 import serenity.cqrs.Evt
 import serenity.persistence.protobuf.ProtobufWriteEventAdapter
-import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, UserUpdatedEvt}
+import serenity.users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, MembershipUpdateEvt, UserUpdatedEvt}
 
 class DomainWriteEventAdapter extends ProtobufWriteEventAdapter {
 
@@ -19,6 +19,8 @@ class DomainWriteEventAdapter extends ProtobufWriteEventAdapter {
     case evt:UserUpdatedEvt =>
       serializeTagged(evt, Set(Tags.USER_EMAIL))
     case evt:BasicAuthEvt =>
+      serializeTagged(evt)
+    case evt:MembershipUpdateEvt =>
       serializeTagged(evt)
     case evt@_ => evt
   }

@@ -1,6 +1,6 @@
 package serenity.users
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
 
 import com.mohiva.play.silhouette.api.Identity
@@ -9,7 +9,7 @@ object domain {
 
   type UserId = UUID
   type DateTime = LocalDateTime
-  type Date = String
+  type Date = LocalDate
 
   sealed trait BasicAuth {
     def password: String

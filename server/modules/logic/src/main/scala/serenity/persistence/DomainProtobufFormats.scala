@@ -1,6 +1,6 @@
 package serenity.persistence
 
-import java.time.{Instant, LocalDateTime, ZoneOffset}
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
 import com.google.protobuf.Message
@@ -9,6 +9,7 @@ import serenity.cqrs.EventMeta
 import serenity.persistence.protobuf.ProtobufFormat
 import serenity.protobuf.Userevents
 import serenity.protobuf.Userevents.BasicAuthMessage.AuthSourceEnum
+import serenity.protobuf.userevents.MembershipUpdateMessage.{ActionEnum, IssuerEnum}
 import serenity.protobuf.userevents._
 import serenity.protobuf.uuid.{UUID => PUUID}
 import serenity.users.UserWriteProtocol._
@@ -33,6 +34,16 @@ object DomainProtobufFormats {
     val instant = m.created.toInstant(ZoneOffset.UTC)
     Some(EventMetaMessage(Some(Timestamp(instant.getEpochSecond, instant.getNano))))
   }
+
+  implicit def toTimestamp(d: LocalDate): Option[Timestamp] =
+    Some(Timestamp(d.atStartOfDay().toInstant(ZoneOffset.UTC).getEpochSecond))
+
+  implicit def fromTimestamp(ts: Option[Timestamp]): LocalDate =
+    LocalDateTime.ofInstant(
+      Instant.ofEpochSecond(
+        ts.get.seconds.toLong,
+        ts.get.nanos.toLong),
+      ZoneOffset.UTC).toLocalDate
 
   implicit def fromEventMeta(m: Option[EventMetaMessage]): EventMeta =
     m.map(em => EventMeta(LocalDateTime.ofInstant(
@@ -121,6 +132,44 @@ object DomainProtobufFormats {
         e.firstName,
         e.lastName,
         e.phone,
+        e.meta
+      ))
+  }
+
+  implicit val membershipUpdate = new ProtobufFormat[MembershipUpdateEvt] {
+
+    override def read(proto: Message): MembershipUpdateEvt = proto match {
+      case jm: Userevents.MembershipUpdateMessage =>
+        val m = MembershipUpdateMessage.fromJavaProto(jm)
+        MembershipUpdateEvt(
+          m.from,
+          m.action match {
+            case ActionEnum.ADD => MembershipAction.Add
+            case ActionEnum.REMOVE => MembershipAction.Remove
+            case e@_ => throw new IllegalArgumentException(s"Unknown enum for ActionEnum. Value: $e")
+          },
+          m.issuer match {
+            case IssuerEnum.JAVA_BIN => MembershipIssuer.JavaBin
+            case IssuerEnum.JAVA_ZONE => MembershipIssuer.JavaZone
+            case e@_ => throw new IllegalArgumentException(s"Unknown enum for IssuerEnum. Value: $e")
+          },
+          m.meta
+        )
+    }
+
+    override def write(e: MembershipUpdateEvt): Message =
+      MembershipUpdateMessage.toJavaProto(MembershipUpdateMessage(
+        e.from,
+        e.from.plusYears(1).minusDays(1),
+        None,
+        e.issuer match {
+          case MembershipIssuer.JavaBin => IssuerEnum.JAVA_BIN
+          case MembershipIssuer.JavaZone => IssuerEnum.JAVA_ZONE
+        },
+        e.action match {
+          case MembershipAction.Add => ActionEnum.ADD
+          case MembershipAction.Remove => ActionEnum.REMOVE
+        },
         e.meta
       ))
   }

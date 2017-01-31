@@ -64,11 +64,9 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
     case GetUserWithEmail(email) if state.pendingUsers.keySet.contains(email) =>
       stash()
     case GetUserWithEmail(email) =>
-      (for {
-        (_, id) <- state.emailToUsers.find(_._1 == email)
-        userActor <- state.usersActor.find(_._1 == id).map(_._2)
-      } yield (userActor, id)) match {
-        case Some((actor, id)) =>
+      state.emailToUsers.get(email)
+          .map(id => (id, state.usersActor.getOrElse(id, userActorFromId(id)))) match {
+        case Some((id, actor)) =>
           actor.forward(GetUser(id))
         case None =>
           sender() ! Failure(ValidationFailed("User with email doesn't exist"))
@@ -98,10 +96,15 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
   def forwardToActor[C <: Cmd](cmd: C, email: String): Unit = {
     state.emailToUsers.get(email)
         .map(id => state.usersActor.getOrElse(id, {
-          val actor = context.actorOf(userActorProps(id))
-          state = state.copy(usersActor = state.usersActor + (id -> actor))
-          actor
+          userActorFromId(id)
         }))
+        .foreach(_.forward(cmd))
+  }
+
+  private def userActorFromId[C <: Cmd](id: UserId) = {
+    val actor = context.actorOf(userActorProps(id))
+    state = state.copy(usersActor = state.usersActor + (id -> actor))
+    actor
   }
 }
 

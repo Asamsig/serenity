@@ -40,10 +40,32 @@ message BasicAuthMessage {
     string salt = 3;
     enum AuthSourceEnum {
         HOSPES = 0;
-        SERENITY = 2;
+        SERENITY = 1;
     }
     AuthSourceEnum source = 4;
     EventMetaMessage meta = 20;
 }
 
+message MembershipUpdateMessage {
+    message EventbriteInformation {
+        string attendee_id = 1;
+        string event_id = 2;
+        string order_id = 3;
+    }
+    enum IssuerEnum {
+        JAVA_ZONE = 0;
+        JAVA_BIN = 1;
+    }
+    enum ActionEnum {
+        ADD = 0;
+        REMOVE = 1;
+    }
+
+    google.protobuf.Timestamp from = 1;
+    google.protobuf.Timestamp to = 2;
+    EventbriteInformation eventbriteInformation = 3;
+    IssuerEnum issuer = 4;
+    ActionEnum action = 5;
+    EventMetaMessage meta = 20;
+}
 

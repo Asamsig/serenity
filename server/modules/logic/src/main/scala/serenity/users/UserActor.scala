@@ -1,5 +1,7 @@
 package serenity.users
 
+import java.time.LocalDate
+
 import akka.actor.Props
 import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
@@ -18,6 +20,7 @@ class UserActor(id: UserId) extends PersistentActor {
   override def receiveRecover: Receive = {
     case msg: UserUpdatedEvt => updateUserModel(msg)
     case msg: HospesUserImportEvt => updateUserModel(msg)
+    case msg: MembershipUpdateEvt => updateUserModel(msg)
   }
 
   override def receiveCommand: Receive = {
@@ -27,17 +30,23 @@ class UserActor(id: UserId) extends PersistentActor {
       persistAll(List(
         toHospesUserEvent(id, hospesUser),
         BasicAuthEvt(id, hospesUser.password_pw, hospesUser.password_slt, HospesAuthSource)
-      )) {
+      ) ++ hospesUser.memberships
+          .map(m => MembershipUpdateEvt(
+            LocalDate.of(m.year, 1, 1),
+            MembershipAction.Add,
+            MembershipIssuer.JavaBin))) {
         case evt: HospesUserImportEvt =>
           updateUserModel(evt)
           sender() ! Success("User created")
         case evt: BasicAuthEvt =>
           credentials = Some(HospesAuth(evt.password, evt.salt))
+        case evt: MembershipUpdateEvt =>
+          updateUserModel(evt)
       }
     case cmd@CreateOrUpdateUserCmd(attendee) =>
       val p = attendee.profile
       persist(
-        UserUpdatedEvt(id, p.email, p.firstName, p.lastName,p.phone, EventMeta())) {
+        UserUpdatedEvt(id, p.email, p.firstName, p.lastName, p.phone, EventMeta())) {
         evt =>
           updateUserModel(evt)
           sender() ! Success("")
@@ -55,12 +64,21 @@ class UserActor(id: UserId) extends PersistentActor {
     user.exists(_.emails.exists(_.address == email)) ||
         user.exists(_.mainEmail.address == email)
 
-  private def updateUserModel(evt: Evt) = evt match {
-    case evt: HospesUserImportEvt => user = EventToUser(evt)
-    case evt: UserUpdatedEvt => user = EventToUser(evt, user)
-    case _ =>
-  }
-
+  private def updateUserModel(evt: Evt) =
+    evt match {
+      case evt: HospesUserImportEvt => user = EventToUser(evt)
+      case evt: UserUpdatedEvt => user = EventToUser(evt, user)
+      case evt: MembershipUpdateEvt => user = user.map(u => u.copy(
+        memberships =
+            evt.action match {
+              case MembershipAction.Add =>
+                u.memberships + Membership(evt.from, evt.from.plusYears(1).minusDays(1), evt.issuer.toString)
+              case MembershipAction.Remove =>
+                u.memberships - Membership(evt.from, evt.from.plusYears(1).minusDays(1), evt.issuer.toString)
+            }
+      ))
+      case _ =>
+    }
 }
 
 object UserActor {
