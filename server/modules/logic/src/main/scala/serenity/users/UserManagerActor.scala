@@ -31,10 +31,10 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
   override def receive: Receive = events orElse commands orElse query
 
   def commands: Receive = {
-    case cmd: CreateUserCmd if state.emailExists(cmd.email) =>
-      sender() ! Failure(ValidationFailed("User exist"))
-    case cmd: CreateUserCmd =>
-      createAccount(cmd, cmd.email)
+    case cmd: CreateOrUpdateUserCmd if state.emailExists(cmd.attendee.profile.email) =>
+      forwardToActor(cmd, cmd.attendee.profile.email)
+    case cmd: CreateOrUpdateUserCmd =>
+      createAccount(cmd, cmd.attendee.profile.email)
 
     case cmd@HospesImportCmd(usr) if state.emailExists(usr.email.map(_.address)) =>
       sender() ! Failure(ValidationFailed("User exist"))
@@ -47,7 +47,7 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
       case u: HospesUserImportEvt =>
         state = state.mailEvent(u)
         if (live) unstashAll()
-      case u: UserRegisteredEvt =>
+      case u: UserUpdatedEvt =>
         state = state.mailEvent(u)
         if (live) unstashAll()
       case m =>
@@ -64,11 +64,9 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
     case GetUserWithEmail(email) if state.pendingUsers.keySet.contains(email) =>
       stash()
     case GetUserWithEmail(email) =>
-      (for {
-        (_, id) <- state.emailToUsers.find(_._1 == email)
-        userActor <- state.usersActor.find(_._1 == id).map(_._2)
-      } yield (userActor, id)) match {
-        case Some((actor, id)) =>
+      state.emailToUsers.get(email)
+          .map(id => (id, state.usersActor.getOrElse(id, userActorFromId(id)))) match {
+        case Some((id, actor)) =>
           actor.forward(GetUser(id))
         case None =>
           sender() ! Failure(ValidationFailed("User with email doesn't exist"))
@@ -95,6 +93,19 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
     userActor.forward(cmd)
   }
 
+  def forwardToActor[C <: Cmd](cmd: C, email: String): Unit = {
+    state.emailToUsers.get(email)
+        .map(id => state.usersActor.getOrElse(id, {
+          userActorFromId(id)
+        }))
+        .foreach(_.forward(cmd))
+  }
+
+  private def userActorFromId[C <: Cmd](id: UserId) = {
+    val actor = context.actorOf(userActorProps(id))
+    state = state.copy(usersActor = state.usersActor + (id -> actor))
+    actor
+  }
 }
 
 object UserManagerActor {
@@ -117,7 +128,7 @@ case class UserManagerState(
       emailToUsers = emailToUsers ++ evt.email.map(_.address -> evt.id),
       pendingUsers = pendingUsers.filter(p => !evt.email.map(_.address).contains(p._1)))
 
-  def mailEvent(evt: UserRegisteredEvt): UserManagerState =
+  def mailEvent(evt: UserUpdatedEvt): UserManagerState =
     copy(
       emailToUsers = emailToUsers + (evt.email -> evt.id),
       pendingUsers = pendingUsers - evt.email)

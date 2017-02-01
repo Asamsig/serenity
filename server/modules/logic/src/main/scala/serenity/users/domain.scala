@@ -1,15 +1,16 @@
 package serenity.users
 
-import java.time.LocalDateTime
+import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
 
 import com.mohiva.play.silhouette.api.Identity
+import serenity.protobuf.userevents.MembershipUpdateMessage.EventbriteInformation
 
 object domain {
 
   type UserId = UUID
   type DateTime = LocalDateTime
-  type Date = String
+  type Date = LocalDate
 
   sealed trait BasicAuth {
     def password: String
@@ -27,13 +28,15 @@ object domain {
   case class Membership(
       from: Date,
       to: Date,
-      kind: String)
+      issuer: MembershipIssuer.Issuer,
+      eventbriteInformation: Option[EventbriteInformation]
+  )
 
-  sealed trait MembershipType
-  case object Hospes
-  case object JavaZone
-  case object JabaBin
-  case object JavaBinHero
+  object MembershipIssuer extends Enumeration {
+    type Issuer = Value
+    val JavaBin = Value
+    val JavaZone = Value
+  }
 
   case class User(
       uuid: UserId,
