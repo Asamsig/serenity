@@ -6,9 +6,10 @@ import akka.actor.{ActorRef, Props}
 import akka.persistence.PersistentActor
 import akka.persistence.query.EventEnvelope
 import akka.testkit.TestProbe
+import serenity.UtcDateTime
 import serenity.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import serenity.cqrs.EventMeta
-import serenity.eventbrite.{Attendee, AttendeeMeta, Profile}
+import serenity.eventbrite.{Attendee, AttendeeMeta, EventbriteStore, Profile}
 import serenity.users.UserManagerActorFixtures.beerDuke
 import serenity.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
 import serenity.users.UserWriteProtocol._
@@ -63,7 +64,10 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
 
     describe("CreateOrUpdateUserCmd") {
       val cmd = CreateOrUpdateUserCmd(
-        Attendee(Profile("ta", "da", "123","tada@java.no"), AttendeeMeta("1", "2", "3", false, false)))
+        Attendee(
+          Profile("ta", "da", "123","tada@java.no"),
+          AttendeeMeta("1", "2", "3", UtcDateTime.nowUTC(), false, false),
+          EventbriteStore.javaBin))
 
       it("should forward msg") {
         val setup = defaultSetup()

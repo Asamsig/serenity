@@ -23,9 +23,10 @@ class EventbriteService @Inject()(
   def handleWebHook(webhook: EventbriteWebHook): Future[Status] =
     webhook.details.action match {
       case "test" =>
+        logger.debug("WebHook test ok!")
         Future.successful(Success)
       case "attendee.updated" =>
-        val result = client.attendee(webhook.details.apiUrl)
+        val result = client.attendee(webhook.details.apiUrl, webhook.store)
             .map(attendee => {
               userManagerActor ! CreateOrUpdateUserCmd(attendee)
               logger.debug(s"Found attendee $attendee")

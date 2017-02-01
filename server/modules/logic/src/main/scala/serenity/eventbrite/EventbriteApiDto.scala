@@ -1,11 +1,15 @@
 package serenity.eventbrite
 
+import java.time.LocalDateTime
+
 import play.api.libs.functional.syntax._
-import play.api.libs.json.{JsPath, Reads}
+import play.api.libs.json._
+import serenity.eventbrite.EventbriteStore.Store
 
 case class Attendee(
     profile: Profile,
-    attendeeMeta: AttendeeMeta
+    attendeeMeta: AttendeeMeta,
+    store: Store
 )
 
 case class Profile(
@@ -20,6 +24,7 @@ case class AttendeeMeta(
     id: String,
     orderId: String,
     eventId: String,
+    created: LocalDateTime,
     cancelled: Boolean,
     refunded: Boolean
 ) {
@@ -29,7 +34,7 @@ case class AttendeeMeta(
   }
 }
 
-case class AttendeeAddress (
+case class AttendeeAddress(
     address_1: Option[String],
     address_2: Option[String],
     city: Option[String],
@@ -37,11 +42,14 @@ case class AttendeeAddress (
     postal_code: Option[String],
     country: Option[String]
 )
+
 sealed trait Status
 case object Update extends Status
 case object Delete extends Status
 
 trait EventbriteApiDtoJson {
+
+  import serenity.json.LocalDateTimeFormatImplicits.localDateTimeFormat
 
   implicit val attendeeAddressJsonReader: Reads[AttendeeAddress] = (
       (JsPath \ "address_1").readNullable[String] and
@@ -64,6 +72,7 @@ trait EventbriteApiDtoJson {
       (JsPath \ "id").read[String] and
           (JsPath \ "order_id").read[String] and
           (JsPath \ "event_id").read[String] and
+          (JsPath \ "created").read[LocalDateTime] and
           (JsPath \ "cancelled").read[Boolean] and
           (JsPath \ "refunded").read[Boolean]
       ) (AttendeeMeta.apply _)

@@ -9,11 +9,11 @@ import serenity.cqrs.EventMeta
 import serenity.persistence.protobuf.ProtobufFormat
 import serenity.protobuf.Userevents
 import serenity.protobuf.Userevents.BasicAuthMessage.AuthSourceEnum
-import serenity.protobuf.userevents.MembershipUpdateMessage.{ActionEnum, IssuerEnum}
+import serenity.protobuf.userevents.MembershipUpdateMessage.{ActionEnum, EventbriteInformation, IssuerEnum}
 import serenity.protobuf.userevents._
 import serenity.protobuf.uuid.{UUID => PUUID}
 import serenity.users.UserWriteProtocol._
-import serenity.users.domain.Email
+import serenity.users.domain.{Email, MembershipIssuer}
 
 import scala.language.implicitConversions
 
@@ -153,6 +153,7 @@ object DomainProtobufFormats {
             case IssuerEnum.JAVA_ZONE => MembershipIssuer.JavaZone
             case e@_ => throw new IllegalArgumentException(s"Unknown enum for IssuerEnum. Value: $e")
           },
+          m.eventbriteInformation.map(ei => EventbirteMeta(ei.attendeeId, ei.eventId, ei.orderId)),
           m.meta
         )
     }
@@ -161,7 +162,7 @@ object DomainProtobufFormats {
       MembershipUpdateMessage.toJavaProto(MembershipUpdateMessage(
         e.from,
         e.from.plusYears(1).minusDays(1),
-        None,
+        e.eventbirteMeta.map(em => EventbriteInformation(em.attendeeId, em.eventId, em.orderId)),
         e.issuer match {
           case MembershipIssuer.JavaBin => IssuerEnum.JAVA_BIN
           case MembershipIssuer.JavaZone => IssuerEnum.JAVA_ZONE
@@ -170,6 +171,7 @@ object DomainProtobufFormats {
           case MembershipAction.Add => ActionEnum.ADD
           case MembershipAction.Remove => ActionEnum.REMOVE
         },
+
         e.meta
       ))
   }

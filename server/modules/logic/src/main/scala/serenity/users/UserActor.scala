@@ -6,6 +6,8 @@ import akka.actor.Props
 import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
 import serenity.cqrs.{EventMeta, Evt}
+import serenity.eventbrite._
+import serenity.protobuf.userevents.MembershipUpdateMessage.EventbriteInformation
 import serenity.users.UserReadProtocol._
 import serenity.users.UserWriteProtocol.{HospesAuthSource, _}
 import serenity.users.domain._
@@ -34,7 +36,8 @@ class UserActor(id: UserId) extends PersistentActor {
           .map(m => MembershipUpdateEvt(
             LocalDate.of(m.year, 1, 1),
             MembershipAction.Add,
-            MembershipIssuer.JavaBin))) {
+            MembershipIssuer.JavaBin,
+            None))) {
         case evt: HospesUserImportEvt =>
           updateUserModel(evt)
           sender() ! Success("User created")
@@ -45,11 +48,19 @@ class UserActor(id: UserId) extends PersistentActor {
       }
     case cmd@CreateOrUpdateUserCmd(attendee) =>
       val p = attendee.profile
-      persist(
-        UserUpdatedEvt(id, p.email, p.firstName, p.lastName, p.phone, EventMeta())) {
-        evt =>
+      val m = attendee.attendeeMeta
+
+      val userEvt = UserUpdatedEvt(id, p.email, p.firstName, p.lastName, p.phone, EventMeta())
+      val events = toMembershipEvent(attendee, m) match {
+        case Some(membershipEvt) => userEvt :: membershipEvt :: Nil
+        case None => userEvt :: Nil
+      }
+      persistAll(events) {
+        case evt: UserUpdatedEvt =>
           updateUserModel(evt)
           sender() ! Success("")
+        case evt: MembershipUpdateEvt =>
+          updateUserModel(evt)
       }
     case GetUser(queriedId) =>
       if (id != queriedId) sender() ! UserNotFound
@@ -60,6 +71,34 @@ class UserActor(id: UserId) extends PersistentActor {
     case m@_ => sender() ! Failure(new IllegalArgumentException("Unhandled message"))
   }
 
+  private def toMembershipEvent(attendee: Attendee, m: AttendeeMeta): Option[MembershipUpdateEvt] = {
+    val hasMatchingMembershipEvent = user.exists(_.memberships.exists(
+      _.eventbriteInformation.exists { case EventbriteInformation(aId, eId, oId) =>
+        aId == m.id && eId == m.eventId && oId == m.orderId
+      }))
+
+    def createEvent(action: MembershipAction.Action) = {
+      Some(MembershipUpdateEvt(
+        attendee.attendeeMeta.created.toLocalDate,
+        action,
+        attendee.store match {
+          case EventbriteStore.javaBin => MembershipIssuer.JavaBin
+          case EventbriteStore.javaZone => MembershipIssuer.JavaZone
+        },
+        Some(EventbirteMeta(m.id, m.eventId, m.orderId))
+      ))
+    }
+
+    attendee.attendeeMeta.status match {
+      case Update if !hasMatchingMembershipEvent =>
+        createEvent(MembershipAction.Add)
+      case Delete if hasMatchingMembershipEvent =>
+        createEvent(MembershipAction.Remove)
+      case _ =>
+        None
+    }
+  }
+
   private def hasEmail(email: String): Boolean =
     user.exists(_.emails.exists(_.address == email)) ||
         user.exists(_.mainEmail.address == email)
@@ -68,15 +107,23 @@ class UserActor(id: UserId) extends PersistentActor {
     evt match {
       case evt: HospesUserImportEvt => user = EventToUser(evt)
       case evt: UserUpdatedEvt => user = EventToUser(evt, user)
-      case evt: MembershipUpdateEvt => user = user.map(u => u.copy(
-        memberships =
-            evt.action match {
-              case MembershipAction.Add =>
-                u.memberships + Membership(evt.from, evt.from.plusYears(1).minusDays(1), evt.issuer.toString)
-              case MembershipAction.Remove =>
-                u.memberships - Membership(evt.from, evt.from.plusYears(1).minusDays(1), evt.issuer.toString)
-            }
-      ))
+      case evt: MembershipUpdateEvt => user = user.map(u => {
+        val evtMembership = Membership(
+          evt.from,
+          evt.from.plusYears(1).minusDays(1),
+          evt.issuer,
+          evt.eventbirteMeta.map(em =>
+            EventbriteInformation(em.attendeeId, em.eventId, em.orderId)))
+        u.copy(
+          memberships =
+              evt.action match {
+                case MembershipAction.Add =>
+                  u.memberships + evtMembership
+                case MembershipAction.Remove =>
+                  u.memberships.filter(m => m.eventbriteInformation != evtMembership.eventbriteInformation)
+              }
+        )
+      })
       case _ =>
     }
 }
