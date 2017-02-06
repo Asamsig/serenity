@@ -7,6 +7,8 @@ object Versions {
   val silhouette = "4.0.0"
   val scalaVersion = "2.11.8"
   val protoBuf = "3.1.0"
+  val playSlick = "2.0.2"
+  val postgresql = "9.4.1212"
 }
 
 object Dependencies {
@@ -20,7 +22,7 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-remote" % Versions.akka,
     "org.iq80.leveldb" % "leveldb" % "0.7",
     "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.12",
-    "org.postgresql" % "postgresql" % "9.4.1212",
+    "org.postgresql" % "postgresql" % Versions.postgresql,
     "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
     "com.google.protobuf" % "protobuf-java" % Versions.protoBuf
   )
@@ -41,7 +43,11 @@ object Dependencies {
 
   private val root = Seq(
     "com.iheart" %% "ficus" % "1.2.6",
-    "net.codingwell" %% "scala-guice" % "4.0.1"
+    "net.codingwell" %% "scala-guice" % "4.0.1",
+    "org.postgresql" % "postgresql" % Versions.postgresql,
+    "com.typesafe.play" %% "play-slick" % Versions.playSlick,
+    "com.typesafe.play" %% "play-slick-evolutions" % Versions.playSlick,
+    PlayImport.evolutions
   )
 
   val playDependencies = akka ++ test ++ silhouette ++ root
