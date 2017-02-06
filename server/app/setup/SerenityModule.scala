@@ -4,6 +4,7 @@ import javax.inject.Inject
 
 import akka.actor.{ActorRef, ActorSystem}
 import com.google.inject.{AbstractModule, Provider}
+import controller._
 import controllers._
 import controllers.helpers.RouterCtrl
 import net.ceedubs.ficus.Ficus._
@@ -25,6 +26,7 @@ class SerenityModule(environment: Environment, config: Configuration) extends Ab
     ctrls.addBinding.to[LoginCtrl].asEagerSingleton()
     ctrls.addBinding.to[PingCtrl].asEagerSingleton()
     ctrls.addBinding.to[AdminCtrl].asEagerSingleton()
+    ctrls.addBinding.to[GraphQLCtrl].asEagerSingleton()
 
     bind[UserRepository].to[SqlUserRepository]
 

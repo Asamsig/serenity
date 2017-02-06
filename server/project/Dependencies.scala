@@ -9,6 +9,7 @@ object Versions {
   val protoBuf = "3.1.0"
   val playSlick = "2.1.0"
   val postgresql = "9.4.1212"
+  val sangria = "1.0.0"
 }
 
 object Dependencies {
@@ -31,6 +32,11 @@ object Dependencies {
     "org.postgresql" % "postgresql" % Versions.postgresql,
     "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
     "com.google.protobuf" % "protobuf-java" % Versions.protoBuf
+  )
+
+  private val sangria = Seq(
+    "org.sangria-graphql" %% "sangria" % Versions.sangria,
+    "org.sangria-graphql" %% "sangria-play-json" % Versions.sangria
   )
 
   private val test = Seq(
@@ -57,7 +63,7 @@ object Dependencies {
     PlayImport.evolutions
   )
 
-  val playDependencies = akka ++ persistence ++ test ++ silhouette ++ root
+  val playDependencies = akka ++ persistence ++ test ++ silhouette ++ sangria ++ root
 
   val protobufDependencies = Seq(
     "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf"
