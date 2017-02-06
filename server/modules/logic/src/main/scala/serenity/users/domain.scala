@@ -4,7 +4,6 @@ import java.time.{LocalDate, LocalDateTime}
 import java.util.UUID
 
 import com.mohiva.play.silhouette.api.Identity
-import serenity.protobuf.userevents.MembershipUpdateMessage.EventbriteInformation
 
 object domain {
 
@@ -29,7 +28,13 @@ object domain {
       from: Date,
       to: Date,
       issuer: MembershipIssuer.Issuer,
-      eventbriteInformation: Option[EventbriteInformation]
+      eventbriteMeta: Option[EventbriteMeta]
+  )
+
+  case class EventbriteMeta(
+      attendeeId: String,
+      eventId: String,
+      orderId: String
   )
 
   object MembershipIssuer extends Enumeration {
@@ -56,7 +61,7 @@ object domain {
       address: String,
       validated: Boolean)
 
-  trait Role {
+  sealed trait Role {
     def name: String
   }
 

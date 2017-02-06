@@ -13,7 +13,7 @@ import serenity.protobuf.userevents.MembershipUpdateMessage.{ActionEnum, Eventbr
 import serenity.protobuf.userevents._
 import serenity.protobuf.uuid.{UUID => PUUID}
 import serenity.users.UserWriteProtocol._
-import serenity.users.domain.{Email, MembershipIssuer}
+import serenity.users.domain.{Email, EventbriteMeta, MembershipIssuer}
 
 import scala.language.implicitConversions
 
@@ -153,7 +153,7 @@ object DomainProtobufFormats {
             case IssuerEnum.JAVA_ZONE => MembershipIssuer.JavaZone
             case e@_ => throw new IllegalArgumentException(s"Unknown enum for IssuerEnum. Value: $e")
           },
-          m.eventbriteInformation.map(ei => EventbirteMeta(ei.attendeeId, ei.eventId, ei.orderId)),
+          m.eventbriteInformation.map(ei => EventbriteMeta(ei.attendeeId, ei.eventId, ei.orderId)),
           m.meta
         )
     }

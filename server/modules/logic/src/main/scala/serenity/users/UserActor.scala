@@ -73,7 +73,7 @@ class UserActor(id: UserId) extends PersistentActor {
 
   private def toMembershipEvent(attendee: Attendee, m: AttendeeMeta): Option[MembershipUpdateEvt] = {
     val hasMatchingMembershipEvent = user.exists(_.memberships.exists(
-      _.eventbriteInformation.exists { case EventbriteInformation(aId, eId, oId) =>
+      _.eventbriteMeta.exists { case EventbriteMeta(aId, eId, oId) =>
         aId == m.id && eId == m.eventId && oId == m.orderId
       }))
 
@@ -85,7 +85,7 @@ class UserActor(id: UserId) extends PersistentActor {
           case EventbriteStore.javaBin => MembershipIssuer.JavaBin
           case EventbriteStore.javaZone => MembershipIssuer.JavaZone
         },
-        Some(EventbirteMeta(m.id, m.eventId, m.orderId))
+        Some(EventbriteMeta(m.id, m.eventId, m.orderId))
       ))
     }
 
@@ -112,15 +112,14 @@ class UserActor(id: UserId) extends PersistentActor {
           evt.from,
           evt.from.plusYears(1).minusDays(1),
           evt.issuer,
-          evt.eventbirteMeta.map(em =>
-            EventbriteInformation(em.attendeeId, em.eventId, em.orderId)))
+          evt.eventbirteMeta)
         u.copy(
           memberships =
               evt.action match {
                 case MembershipAction.Add =>
                   u.memberships + evtMembership
                 case MembershipAction.Remove =>
-                  u.memberships.filter(m => m.eventbriteInformation != evtMembership.eventbriteInformation)
+                  u.memberships.filter(m => m.eventbriteMeta != evtMembership.eventbriteMeta)
               }
         )
       })

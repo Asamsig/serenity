@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import serenity.cqrs.{Cmd, EventMeta, Evt}
 import serenity.eventbrite.Attendee
-import serenity.users.domain.{Email, MembershipIssuer, UserId}
+import serenity.users.domain.{Email, EventbriteMeta, MembershipIssuer, UserId}
 
 object UserWriteProtocol {
 
@@ -81,16 +81,11 @@ object UserWriteProtocol {
     val Remove = Value
   }
 
-  case class EventbirteMeta(
-      attendeeId: String,
-      eventId: String,
-      orderId: String
-  )
   case class MembershipUpdateEvt(
       from: LocalDate,
       action: MembershipAction.Action,
       issuer: MembershipIssuer.Issuer,
-      eventbirteMeta: Option[EventbirteMeta],
+      eventbirteMeta: Option[EventbriteMeta],
       meta: EventMeta = EventMeta()
   ) extends Evt
 
