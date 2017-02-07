@@ -11,7 +11,7 @@ import play.api.routing.sird._
 class PingCtrl @Inject()() extends RouterCtrl {
 
   override def withRoutes(): Routes = {
-    case GET(p"/ping") => ping()
+    case GET(p"/api/ping") => ping()
   }
 
   def ping() = Action {

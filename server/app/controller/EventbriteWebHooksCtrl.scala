@@ -27,7 +27,7 @@ class EventbriteWebHooksCtrl @Inject()(
   private val storePath = EnumPathExtractor.binders(EventbriteStore)
 
   override def withRoutes(): Routes = {
-    case POST(p"/webhook/${storePath(store)}" ? q"token=$secret") => this.webHook(store, secret)
+    case POST(p"/api/webhook/${storePath(store)}" ? q"token=$secret") => this.webHook(store, secret)
   }
 
   def webHook(store: EventbriteStore.Store, secret: String) = UnsecuredAction.async(parse.json) {

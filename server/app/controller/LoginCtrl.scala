@@ -30,8 +30,8 @@ class LoginCtrl @Inject()(
 ) extends Controller with RouterCtrl{
 
   override def withRoutes(): Routes = {
-    case POST(p"/login") => login()
-    case GET(p"/logout") => logout()
+    case POST(p"/api/login") => login()
+    case GET(p"/api/logout") => logout()
   }
 
   import silhouette.{UnsecuredAction, UserAwareAction}

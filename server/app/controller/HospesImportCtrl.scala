@@ -28,7 +28,7 @@ class HospesImportCtrl @Inject()(
     implicit ec: ExecutionContext) extends HospesImportCtrlFormats with RouterCtrl{
 
   override def withRoutes(): Router.Routes = {
-    case POST(p"/hospes/import") => importData()
+    case POST(p"/api/hospes/import") => importData()
   }
 
   import silhouette.SecuredAction
