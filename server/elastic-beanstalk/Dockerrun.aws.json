@@ -4,5 +4,6 @@
     {
       "ContainerPort": "9000"
     }
-  ]
+  ],
+  "Logging": "/opt/docker/logs/"
 }
