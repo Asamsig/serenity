@@ -19,7 +19,8 @@ class SerenityModule( environment: Environment, config: Configuration) extends A
 
 
     bind[String].annotatedWithName("eventbrite.secret").toInstance(config.getString("serenity.eventbrite.secret").get)
-    bind[String].annotatedWithName("eventbrite.token").toInstance(config.getString("serenity.eventbrite.token").get)
+    bind[String].annotatedWithName("eventbrite.javabin.token").toInstance(config.getString("serenity.eventbrite.javabin.token").get)
+    bind[String].annotatedWithName("eventbrite.javazone.token").toInstance(config.getString("serenity.eventbrite.javazone.token").get)
     bindActor[UserManagerActor]("UserManagerActor", (p) => UserManagerActor.apply())
   }
 

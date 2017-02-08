@@ -9,13 +9,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class EventbriteClient @Inject() (
     ws: WSClient,
-    @Named("eventbrite.token") token: String)
+    @Named("eventbrite.javabin.token") javaBinToken: String,
+    @Named("eventbrite.javazone.token") javaZoneToken: String)
     (implicit ec: ExecutionContext) extends EventbriteApiDtoJson{
 
 
   def attendee(url: String, store: Store): Future[Attendee] = {
     ws.url(url)
-        .withQueryString(("token", token))
+        .withQueryString(("token", store match {
+          case EventbriteStore.javaBin => javaBinToken
+          case EventbriteStore.javaZone => javaZoneToken
+        }))
         .get().map(r => {
       val jsonResponse = r.json
       Attendee(
