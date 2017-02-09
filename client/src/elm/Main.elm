@@ -31,18 +31,16 @@ update msg model =
 
 
 -- VIEW
--- Html is defined as: elem [ attribs ][ children ]
--- CSS can be applied via class names or inline style attrib
 view : Model -> Html Msg
 view model =
-  div [ class "container", style [("margin-top", "30px"), ( "text-align", "center" )] ][    -- inline CSS (literal)
+  div [ class "container", style [("margin-top", "30px"), ( "text-align", "center" )] ][
     div [ class "row" ][
       div [ class "col-xs-12" ][
         div [ class "jumbotron" ][
-          hello model                                                                     -- ext 'hello' component (takes 'model' as arg)
-          , p [] [ text ( "Elm Webpack Starter" ) ]
-          , button [ class "btn btn-primary btn-lg", onClick Increment ] [                  -- click handler
-            span[ class "glyphicon glyphicon-star" ][]                                      -- glyphicon
+          hello model
+          , p [] [ text ( "javaBin membership frontend" ) ]
+          , button [ class "btn btn-primary btn-lg", onClick Increment ] [
+            span[ class "glyphicon glyphicon-star" ][]
             , span[][ text "FTW!" ]
           ]
         ]
