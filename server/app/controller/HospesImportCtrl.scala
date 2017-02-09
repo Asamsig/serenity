@@ -66,8 +66,15 @@ class HospesImportCtrl @Inject()(
 
 trait HospesImportCtrlFormats {
   implicit val bigIntFormat = new Format[BigInt] {
-    override def reads(json: JsValue): JsResult[BigInt] = json.validate[String].flatMap { s =>
-      Try(BigInt(s)).map(v => JsSuccess(v)).getOrElse(JsError(s"$s is not a number"))
+    override def reads(json: JsValue): JsResult[BigInt] = json match {
+      case JsNumber(n) =>
+        JsSuccess(n.toBigInt())
+      case JsString(s) =>
+        Try(BigInt(s))
+            .map(v => JsSuccess(v))
+            .getOrElse(JsError(s"$s is not a number"))
+      case _ =>
+        JsError("Not parsable to BitInt")
     }
 
     override def writes(o: BigInt): JsValue = JsString(o.toString)
