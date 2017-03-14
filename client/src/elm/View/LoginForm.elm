@@ -14,7 +14,7 @@ view model =
             div []
                 [ div
                     [ class "h1" ]
-                    [ text ("Hello, javaBin, You need to log in") ]
+                    [ text ("JavaBin") ]
                 , input
                     [ onInput Messages.UpdateUsername
                     , type_ "text"
