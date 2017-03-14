@@ -7,9 +7,12 @@ type Auth
 
 
 type alias Model =
-    { auth : Auth }
+    { auth : Auth
+    , username : String
+    , password : String
+    }
 
 
 init : ( Model, Cmd msg )
 init =
-    ( Model LoggedOut, Cmd.none )
+    ( Model LoggedOut "" "", Cmd.none )

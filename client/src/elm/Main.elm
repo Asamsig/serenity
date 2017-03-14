@@ -3,8 +3,9 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Components.Hello exposing (hello)
-import Model exposing (Model)
+import View.LoginForm
+import Model exposing (Model, Auth(..))
+import Messages exposing (Msg(..))
 
 
 -- APP
@@ -20,11 +21,6 @@ main =
         }
 
 
-model : number
-model =
-    0
-
-
 sub : Model -> Sub msg
 sub model =
     Sub.none
@@ -34,19 +30,20 @@ sub model =
 -- UPDATE
 
 
-type Msg
-    = NoOp
-    | Increment
-
-
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
 
-        Increment ->
-            ( model, Cmd.none )
+        LogIn ->
+            ( { model | auth = LoggedIn "my token" }, Cmd.none )
+
+        UpdateUsername usr ->
+            { model | username = usr } ! []
+
+        UpdatePassword pwd ->
+            { model | password = pwd } ! []
 
 
 
@@ -65,11 +62,11 @@ view model =
         [ div [ class "row" ]
             [ div [ class "col-xs-12" ]
                 [ div [ class "jumbotron" ]
-                    [ hello model
+                    [ View.LoginForm.view model
                     , p [] [ text ("javaBin membership frontend") ]
                     , button
                         [ class "btn btn-primary btn-lg"
-                        , onClick Increment
+                        , onClick LogIn
                         ]
                         [ span [ class "glyphicon glyphicon-star" ] []
                         , span [] [ text "FTW!" ]
