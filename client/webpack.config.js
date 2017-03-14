@@ -65,7 +65,7 @@ if ( TARGET_ENV === 'development' ) {
       historyApiFallback: true,
       contentBase: './src',
       proxy: {
-        'api' : {
+        '/api' : {
           target: 'http://localhost:9000',
           secure: false
         },
