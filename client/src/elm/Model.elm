@@ -10,9 +10,10 @@ type alias Model =
     { auth : Auth
     , username : String
     , password : String
+    , loginErr : Maybe String
     }
 
 
 init : ( Model, Cmd msg )
 init =
-    ( Model LoggedOut "" "", Cmd.none )
+    ( Model LoggedOut "" "" Nothing, Cmd.none )

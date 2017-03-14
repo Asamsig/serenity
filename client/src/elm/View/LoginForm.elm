@@ -2,37 +2,43 @@ module View.LoginForm exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Model exposing (..)
+import Model
 import Messages exposing (Msg(..))
 import Html.Events exposing (onClick, onInput)
 
 
-view : Model -> Html Msg
+view : Model.Model -> Html Msg
 view model =
     case model.auth of
-        LoggedOut ->
+        Model.LoggedOut ->
             div []
                 [ div
                     [ class "h1" ]
                     [ text ("Hello, javaBin, You need to log in") ]
                 , input
                     [ onInput Messages.UpdateUsername
-                    , type_ "password"
+                    , type_ "text"
                     , name "username"
                     , placeholder "Username"
                     ]
                     []
                 , input
                     [ onInput Messages.UpdatePassword
-                    , type_ "text"
+                    , type_ "password"
                     , name "password"
                     , placeholder "Password"
                     ]
                     []
                 , button [ onClick LogIn ] [ text "Login" ]
+                , case model.loginErr of
+                    Nothing ->
+                        text ""
+
+                    Just err ->
+                        text err
                 ]
 
-        LoggedIn token ->
+        Model.LoggedIn token ->
             div
                 [ class "h1" ]
-                [ text ("Hello, javaBin, You're logged in, token: " ++ token) ]
+                [ text ("Welcome") ]
