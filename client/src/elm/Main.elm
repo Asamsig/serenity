@@ -4,27 +4,30 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Components.Hello exposing (hello)
+import Model exposing (Model)
 
 
 -- APP
 
 
-main : Program Never Int Msg
+main : Program Never Model Msg
 main =
-    Html.beginnerProgram { model = model, view = view, update = update }
-
-
-
--- MODEL
-
-
-type alias Model =
-    Int
+    Html.program
+        { view = view
+        , update = update
+        , init = Model.init
+        , subscriptions = sub
+        }
 
 
 model : number
 model =
     0
+
+
+sub : Model -> Sub msg
+sub model =
+    Sub.none
 
 
 
@@ -36,14 +39,14 @@ type Msg
     | Increment
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         NoOp ->
-            model
+            ( model, Cmd.none )
 
         Increment ->
-            model + 1
+            ( model, Cmd.none )
 
 
 
