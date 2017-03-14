@@ -53,9 +53,6 @@ loginAction usr pwd =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
         LogIn ->
             model ! [ loginAction model.username model.password ]
 
@@ -96,13 +93,6 @@ view model =
                 [ div [ class "jumbotron" ]
                     [ View.LoginForm.view model
                     , p [] [ text ("javaBin  membership frontend") ]
-                    , button
-                        [ class "btn btn-primary btn-lg"
-                        , onClick LogIn
-                        ]
-                        [ span [ class "glyphicon glyphicon-star" ] []
-                        , span [] [ text "FTW!" ]
-                        ]
                     ]
                 ]
             ]

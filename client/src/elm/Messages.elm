@@ -4,8 +4,7 @@ import Http
 
 
 type Msg
-    = NoOp
-    | LogIn
+    = LogIn
     | LoggedIn (Result Http.Error String)
     | UpdateUsername String
     | UpdatePassword String
