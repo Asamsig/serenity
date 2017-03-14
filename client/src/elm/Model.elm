@@ -1,19 +1,30 @@
-module Model exposing (Model, Auth(..), init)
+module Model exposing (Model, Auth(..), LoginFormData, init)
 
 
 type Auth
-    = LoggedOut
+    = LoggedOut LoginFormData
     | LoggedIn String
 
 
-type alias Model =
-    { auth : Auth
-    , username : String
+type alias LoginFormData =
+    { username : String
     , password : String
     , loginErr : Maybe String
     }
 
 
+type alias Model =
+    { auth : Auth
+    }
+
+
+initAuthModel : Auth
+initAuthModel =
+    (LoggedOut (LoginFormData "" "" Nothing))
+
+
 init : ( Model, Cmd msg )
 init =
-    ( Model LoggedOut "" "" Nothing, Cmd.none )
+    ( Model initAuthModel
+    , Cmd.none
+    )

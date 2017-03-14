@@ -2,7 +2,6 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
 import View.LoginForm
 import Model exposing (Model)
 import Messages exposing (Msg(..))
@@ -54,25 +53,39 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LogIn ->
-            model ! [ loginAction model.username model.password ]
+            case model.auth of
+                Model.LoggedIn token ->
+                    model ! []
+
+                Model.LoggedOut formData ->
+                    model ! [ loginAction formData.username formData.password ]
 
         UpdateUsername usr ->
-            { model | username = usr } ! []
+            case model.auth of
+                Model.LoggedIn token ->
+                    model ! []
+
+                Model.LoggedOut formData ->
+                    { model | auth = Model.LoggedOut { formData | username = usr, loginErr = Nothing } } ! []
 
         UpdatePassword pwd ->
-            { model | password = pwd } ! []
+            case model.auth of
+                Model.LoggedIn token ->
+                    model ! []
+
+                Model.LoggedOut formData ->
+                    { model | auth = Model.LoggedOut { formData | password = pwd, loginErr = Nothing } } ! []
 
         LoggedIn (Err e) ->
-            { model | loginErr = Just "login_failed" } ! []
+            case model.auth of
+                Model.LoggedIn token ->
+                    { model | auth = (Model.LoggedOut (Model.LoginFormData "" "" Nothing)) } ! []
+
+                Model.LoggedOut formData ->
+                    { model | auth = Model.LoggedOut { formData | loginErr = Just "login_failed" } } ! []
 
         LoggedIn (Ok token) ->
-            { model
-                | auth = Model.LoggedIn token
-                , loginErr = Nothing
-                , username = ""
-                , password = ""
-            }
-                ! []
+            { model | auth = Model.LoggedIn token } ! []
 
 
 

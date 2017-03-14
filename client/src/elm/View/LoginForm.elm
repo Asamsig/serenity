@@ -10,7 +10,7 @@ import Html.Events exposing (onClick, onInput)
 view : Model.Model -> Html Msg
 view model =
     case model.auth of
-        Model.LoggedOut ->
+        Model.LoggedOut form ->
             div []
                 [ div
                     [ class "h1" ]
@@ -30,7 +30,7 @@ view model =
                     ]
                     []
                 , button [ onClick LogIn ] [ text "Login" ]
-                , case model.loginErr of
+                , case form.loginErr of
                     Nothing ->
                         text ""
 
