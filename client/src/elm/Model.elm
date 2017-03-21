@@ -1,5 +1,7 @@
 module Model exposing (Model, Auth(..), LoginFormData, init)
 
+import Ports
+
 
 type Auth
     = LoggedOut LoginFormData
@@ -26,5 +28,5 @@ initAuthModel =
 init : ( Model, Cmd msg )
 init =
     ( Model initAuthModel
-    , Cmd.none
+    , Ports.getToken ()
     )

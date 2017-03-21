@@ -8,3 +8,4 @@ type Msg
     | LoggedIn (Result Http.Error String)
     | UpdateUsername String
     | UpdatePassword String
+    | StoredToken (Maybe String)

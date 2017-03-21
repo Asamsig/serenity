@@ -8,6 +8,7 @@ import Messages exposing (Msg(..))
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Ports
 
 
 -- APP
@@ -23,9 +24,9 @@ main =
         }
 
 
-sub : Model -> Sub msg
+sub : Model -> Sub Msg
 sub model =
-    Sub.none
+    Ports.authToken Messages.StoredToken
 
 
 loginAction : String -> String -> Cmd Msg
@@ -85,7 +86,15 @@ update msg model =
                     { model | auth = Model.LoggedOut { formData | loginErr = Just "login_failed" } } ! []
 
         LoggedIn (Ok token) ->
-            { model | auth = Model.LoggedIn token } ! []
+            { model | auth = Model.LoggedIn token } ! [ Ports.login token ]
+
+        StoredToken mbyToken ->
+            case mbyToken of
+                Just token ->
+                    { model | auth = Model.LoggedIn token } ! []
+
+                Nothing ->
+                    model ! []
 
 
 
