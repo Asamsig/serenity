@@ -4,10 +4,10 @@ port module Ports exposing (..)
 port login : String -> Cmd msg
 
 
-port getToken : () -> Cmd msg
+port fetchToken : () -> Cmd msg
 
 
-port authToken : (Maybe String -> msg) -> Sub msg
+port fetchedToken : (Maybe String -> msg) -> Sub msg
 
 
 port logout : () -> Cmd msg

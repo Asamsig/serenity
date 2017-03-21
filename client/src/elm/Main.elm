@@ -27,7 +27,7 @@ main =
 sub : Model -> Sub Msg
 sub model =
     Sub.batch
-        [ Ports.authToken Messages.StoredToken
+        [ Ports.fetchedToken Messages.StoredToken
         , Ports.loggedOut Messages.LoggedOut
         ]
 

@@ -28,5 +28,5 @@ initAuthModel =
 init : ( Model, Cmd msg )
 init =
     ( Model initAuthModel
-    , Ports.getToken ()
+    , Ports.fetchToken ()
     )

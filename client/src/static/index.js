@@ -10,8 +10,8 @@ require('../../node_modules/bootstrap-sass/assets/javascripts/bootstrap.js');   
         localStorage.setItem("auth-token", token);
     });
 
-    app.ports.getToken.subscribe(function () {
-        app.ports.authToken.send(localStorage.getItem("auth-token"));
+    app.ports.fetchToken.subscribe(function () {
+        app.ports.fetchedToken.send(localStorage.getItem("auth-token"));
     });
 
     app.ports.logout.subscribe(function () {
