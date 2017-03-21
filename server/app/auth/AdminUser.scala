@@ -16,17 +16,16 @@ class AdminUser @Inject()(@Named("bcryptHasher") hasher: PasswordHasher, configu
 
   lazy val user: User = User(
     uuid = UUID.randomUUID(),
-    mainEmail = Email(envOrConf("email"), validated = true),
+    mainEmail = Email(strFromCfg("email"), validated = true),
     createdDate = UtcDateTime.nowUTC(),
     firstName = Some("admin"),
     lastName = Some("javaBin"),
     roles = Set(AdminRole)
   )
 
-  lazy val auth: PasswordInfo = hasher.hash(envOrConf("password"))
+  lazy val auth: PasswordInfo = hasher.hash(strFromCfg("password"))
 
-  def envOrConf(path: String): String = {
-    val fallback = configuration.getString(s"$basePath.$path")
-    envOrSome(s"ADMIN_${path.toUpperCase()}", fallback).get
-  }
+  def strFromCfg(path: String): String =
+    configuration.underlying.getString(s"$basePath.$path")
+
 }
