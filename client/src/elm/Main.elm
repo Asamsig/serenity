@@ -26,7 +26,10 @@ main =
 
 sub : Model -> Sub Msg
 sub model =
-    Ports.authToken Messages.StoredToken
+    Sub.batch
+        [ Ports.authToken Messages.StoredToken
+        , Ports.loggedOut Messages.LoggedOut
+        ]
 
 
 loginAction : String -> String -> Cmd Msg
@@ -87,6 +90,12 @@ update msg model =
 
         LoggedIn (Ok token) ->
             { model | auth = Model.LoggedIn token } ! [ Ports.login token ]
+
+        LogOut ->
+            model ! [Ports.logout ()]
+
+        LoggedOut () ->
+            { model | auth = Model.initAuthModel} ! []
 
         StoredToken mbyToken ->
             case mbyToken of

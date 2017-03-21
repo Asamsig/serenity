@@ -41,4 +41,6 @@ view model =
         Model.LoggedIn token ->
             div
                 [ class "h1" ]
-                [ text ("Welcome") ]
+                [ text "Welcome"
+                , button [ onClick Messages.LogOut] [text "Log Out"]
+                 ]

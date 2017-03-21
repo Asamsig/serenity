@@ -1,4 +1,4 @@
-module Model exposing (Model, Auth(..), LoginFormData, init)
+module Model exposing (Model, Auth(..), LoginFormData, init, initAuthModel)
 
 import Ports
 

@@ -8,3 +8,9 @@ port getToken : () -> Cmd msg
 
 
 port authToken : (Maybe String -> msg) -> Sub msg
+
+
+port logout : () -> Cmd msg
+
+
+port loggedOut : (() -> msg) -> Sub msg

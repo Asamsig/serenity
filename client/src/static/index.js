@@ -14,5 +14,10 @@ require('../../node_modules/bootstrap-sass/assets/javascripts/bootstrap.js');   
         app.ports.authToken.send(localStorage.getItem("auth-token"));
     });
 
+    app.ports.logout.subscribe(function () {
+        localStorage.removeItem("auth-token");
+        app.ports.loggedOut.send(null);
+    });
+
 })();
 
