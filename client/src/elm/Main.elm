@@ -92,10 +92,10 @@ update msg model =
             { model | auth = Model.LoggedIn token } ! [ Ports.login token ]
 
         LogOut ->
-            model ! [Ports.logout ()]
+            model ! [ Ports.logout () ]
 
         LoggedOut () ->
-            { model | auth = Model.initAuthModel} ! []
+            { model | auth = Model.initAuthModel } ! []
 
         StoredToken mbyToken ->
             case mbyToken of

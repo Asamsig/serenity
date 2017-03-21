@@ -42,5 +42,5 @@ view model =
             div
                 [ class "h1" ]
                 [ text "Welcome"
-                , button [ onClick Messages.LogOut] [text "Log Out"]
-                 ]
+                , button [ onClick Messages.LogOut ] [ text "Log Out" ]
+                ]
