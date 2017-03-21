@@ -8,7 +8,7 @@ var CopyWebpackPlugin = require( 'copy-webpack-plugin' );
 var entryPath         = path.join( __dirname, 'src/static/index.js' );
 var outputPath        = path.join( __dirname, 'dist' );
 
-console.log( 'WEBPACK GO!');
+console.log('Starting WEBPACK!');
 
 // determine build env
 var TARGET_ENV = process.env.npm_lifecycle_event === 'build' ? 'production' : 'development';
@@ -65,7 +65,7 @@ if ( TARGET_ENV === 'development' ) {
       historyApiFallback: true,
       contentBase: './src',
       proxy: {
-        'api' : {
+        '/api' : {
           target: 'http://localhost:9000',
           secure: false
         },
@@ -122,10 +122,12 @@ if ( TARGET_ENV === 'production' ) {
 
     plugins: [
       new CopyWebpackPlugin([
+/* add when needed
         {
           from: 'src/static/img/',
           to:   'static/img/'
         },
+ */
         {
           from: 'src/favicon.ico'
         },

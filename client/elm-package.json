@@ -1,6 +1,6 @@
 {
     "version": "1.0.0",
-    "summary": "Example using `elm-webpack-loader`.",
+    "summary": "javaBin membership frontend",
     "repository": "https://github.com/moarwick/elm-webpack-starter.git",
     "license": "MIT",
     "source-directories": [
