@@ -15,17 +15,26 @@ class PasswordAuth @Inject()(userService: UserService, adminUser: AdminUser)(imp
     extends DelegableAuthInfoDAO[PasswordInfo] {
 
   override def find(loginInfo: LoginInfo): Future[Option[PasswordInfo]] = {
-    if (loginInfo.providerKey == adminUser.user.mainEmail.address )
+    if (loginInfo.providerKey == adminUser.user.mainEmail.address)
       Future.successful(Some(adminUser.auth))
     else userService.findAuth(loginInfo.providerKey).map {
-      case SerenityAuth(pwd, salt) =>
-        Some(PasswordInfo(BCryptPasswordHasher.ID, pwd, Some(salt)))
-      case HospesAuth(pwd, salt) =>
-        Some(PasswordInfo(HospesPasswordHasher.ID, pwd, Some(salt)))
-      case _ =>
+      case Some(auth) => auth match {
+
+        case SerenityAuth(pwd, salt) =>
+          Some(PasswordInfo(BCryptPasswordHasher.ID, pwd, Some(salt)))
+
+        case HospesAuth(pwd, salt) =>
+          Some(PasswordInfo(HospesPasswordHasher.ID, pwd, Some(salt)))
+
+        case _ =>
+          None
+      }
+
+      case None =>
         None
+
     }.recover {
-      case e => None
+      case _ => None
     }
   }
 

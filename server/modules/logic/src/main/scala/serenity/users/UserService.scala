@@ -5,27 +5,49 @@ import javax.inject.{Inject, Named}
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
+import play.api.Logger
 import serenity.users.UserReadProtocol._
 import serenity.users.domain.{BasicAuth, User}
 
 import scala.concurrent.duration.DurationDouble
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRef)(implicit ec: ExecutionContext) {
 
   implicit val timeout: Timeout = 120.seconds
 
-  def findUser(email: String): Future[Option[User]] =
-    (userManagerActor ? GetUserWithEmail(email)).map{
-      case UserResponse(usr) => Some(usr)
-      case _ => None
-    }.recover{case _ => None}
+  val logger = Logger(classOf[UserService])
 
-  def findAuth(email: String): Future[BasicAuth] = {
+  def findUser(email: String): Future[Option[User]] =
+    (userManagerActor ? GetUserWithEmail(email)).map {
+      case UserResponse(usr) =>
+        logger.debug(s"Found user matching email $email -> ${usr.uuid}")
+        Some(usr)
+
+      case _ =>
+        logger.debug(s"No matching user for $email")
+        None
+
+    }.recover { case NonFatal(t) =>
+      logger.warn(s"Unable to retrieve user for email $email", t)
+      None
+    }
+
+  def findAuth(email: String): Future[Option[BasicAuth]] = {
     (userManagerActor ? GetUserCredentials(email)).map {
-      case UserCredentialsResponse(auth) => auth
-      case CredentialsNotFound => throw new IllegalStateException("CredentialsNotFound")
-      case m => throw new IllegalStateException(s"Unknown fault $m")
+      case UserCredentialsResponse(auth) =>
+        logger.debug(s"Fount credentials for user with email $email")
+        Some(auth)
+
+      case CredentialsNotFound =>
+        logger.debug(s"No credentials found for user with $email")
+        None
+
+      case m =>
+        logger.warn(s"No credentials found for user with $email." +
+            s" Found an unexpected response of type ${m.getClass}")
+        None
     }
   }
 
