@@ -8,10 +8,11 @@ import com.mohiva.play.silhouette.password.BCryptPasswordHasher
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
 import serenity.users.UserService
 import serenity.users.domain.{HospesAuth, SerenityAuth}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class PasswordAuth @Inject()(userService: UserService, adminUser: AdminUser)(implicit ec: ExecutionContext)
+class PasswordAuth @Inject()(userService: UserService, adminUser: AdminUser)
     extends DelegableAuthInfoDAO[PasswordInfo] {
 
   override def find(loginInfo: LoginInfo): Future[Option[PasswordInfo]] = {

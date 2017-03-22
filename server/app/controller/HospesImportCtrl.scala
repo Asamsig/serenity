@@ -8,6 +8,7 @@ import akka.util.Timeout
 import auth.{DefaultEnv, WithRole}
 import com.mohiva.play.silhouette.api.Silhouette
 import controller.helpers.RouterCtrl
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc.BodyParsers.parse
 import play.api.mvc.{Result, Results}
@@ -18,14 +19,14 @@ import serenity.hospesimport.model.{MembershipJson, PersonJson}
 import serenity.users.domain.AdminRole
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
 
 @Singleton
 class HospesImportCtrl @Inject()(
     @Named("UserManagerActor") userManagerActor: ActorRef,
-    silhouette: Silhouette[DefaultEnv])(
-    implicit ec: ExecutionContext) extends HospesImportCtrlFormats with RouterCtrl{
+    silhouette: Silhouette[DefaultEnv]
+) extends HospesImportCtrlFormats with RouterCtrl {
 
   override def withRoutes(): Router.Routes = {
     case POST(p"/api/hospes/import") => importData()

@@ -6,14 +6,15 @@ import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 import play.api.Logger
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import serenity.users.UserReadProtocol._
 import serenity.users.domain.{BasicAuth, User}
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRef)(implicit ec: ExecutionContext) {
+class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRef) {
 
   implicit val timeout: Timeout = 120.seconds
 
