@@ -75,12 +75,12 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
       if (state.pendingUsers.keySet.contains(email)) {
         stash()
       } else {
-        (for {
-          (_, id) <- state.emailToUsers.find(_._1 == email)
-          userActor <- state.usersActor.find(_._1 == id).map(_._2)
-        } yield userActor) match {
-          case Some(actor) => actor.forward(qry)
-          case None => sender() ! CredentialsNotFound
+        state.emailToUsers.get(email)
+            .map(id => (id, state.usersActor.getOrElse(id, userActorFromId(id)))) match {
+          case Some((id, actor)) =>
+            actor.forward(qry)
+          case None =>
+            sender() ! CredentialsNotFound
         }
       }
     }
