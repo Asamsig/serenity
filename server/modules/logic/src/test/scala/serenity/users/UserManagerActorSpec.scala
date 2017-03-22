@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.actor.{ActorRef, Props}
 import akka.persistence.PersistentActor
-import akka.persistence.query.EventEnvelope
+import akka.persistence.query.{EventEnvelope2, Sequence}
 import akka.testkit.TestProbe
 import serenity.UtcDateTime
 import serenity.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
@@ -20,7 +20,7 @@ import scala.util.Failure
 class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.inMemoryPersistence())
     with InMemoryCleanup {
 
-  def defaultSetup() = new {
+  class DefaultTestSetup {
     val probe: TestProbe = new TestProbe(system)
     val props: (UserId) => Props = (id: UserId) => {
       val ref: ActorRef = probe.ref
@@ -28,6 +28,8 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
     }
     val actor: ActorRef = system.actorOf(UserManagerActor(props))
   }
+
+  def defaultSetup() = new DefaultTestSetup
 
   describe("Command messages") {
     describe("HospesImportCmd") {
@@ -101,9 +103,9 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
   }
 
   describe("Query messages") {
-    def withEnvelope(cmd: HospesImportCmd): EventEnvelope = {
-      EventEnvelope(
-        1, "", 2,
+    def withEnvelope(cmd: HospesImportCmd): EventEnvelope2 = {
+      EventEnvelope2(
+        Sequence(1), "", 2,
         UserWriteProtocol.toHospesUserEvent(UUID.randomUUID(), cmd.user))
     }
 

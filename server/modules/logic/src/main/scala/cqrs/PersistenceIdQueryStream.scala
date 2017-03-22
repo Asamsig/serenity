@@ -1,11 +1,11 @@
 package cqrs
 
 import akka.NotUsed
-import akka.persistence.query.EventEnvelope
+import akka.persistence.query.{EventEnvelope}
 import akka.persistence.query.scaladsl.{CurrentEventsByPersistenceIdQuery, EventsByPersistenceIdQuery}
 import akka.stream.scaladsl.Source
 
-trait PersistenceIdQueryStream extends QueryStream {
+trait PersistenceIdQueryStream extends QueryStream[EventEnvelope] {
 
   def persistenceId: String
 

@@ -1,21 +1,21 @@
 package cqrs
 
 import akka.NotUsed
-import akka.persistence.query.EventEnvelope
-import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
+import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery2, EventsByTagQuery2}
+import akka.persistence.query.{EventEnvelope2, Sequence}
 import akka.stream.scaladsl.Source
 
-trait TagQueryStream extends QueryStream {
+trait TagQueryStream extends QueryStream[EventEnvelope2] {
 
   def tagName: String
 
-  def journal: CurrentEventsByTagQuery with EventsByTagQuery
+  def journal: CurrentEventsByTagQuery2 with EventsByTagQuery2
 
-  override def streamCurrent: Source[EventEnvelope, NotUsed] =
-    journal.currentEventsByTag(tagName, currentSequenceNumber)
+  override def streamCurrent: Source[EventEnvelope2, NotUsed] =
+    journal.currentEventsByTag(tagName, Sequence(currentSequenceNumber))
 
-  override def streamLive: Source[EventEnvelope, NotUsed] =
-    journal.eventsByTag(tagName, currentSequenceNumber + 1)
+  override def streamLive: Source[EventEnvelope2, NotUsed] =
+    journal.eventsByTag(tagName, Sequence(currentSequenceNumber + 1))
 
 }
 

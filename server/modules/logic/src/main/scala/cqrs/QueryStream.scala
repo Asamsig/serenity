@@ -2,17 +2,20 @@ package cqrs
 
 import akka.NotUsed
 import akka.actor.Actor
-import akka.persistence.query.EventEnvelope
+import akka.persistence.query.{EventEnvelope, EventEnvelope2}
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 
-trait QueryStream extends Actor {
+/**
+ * @tparam Env EventEnvelope or EventEnvelope2. Workaround while the api isn't stable
+ */
+trait QueryStream[Env] extends Actor {
 
   import QueryStream._
 
-  def streamCurrent: Source[EventEnvelope, NotUsed]
+  def streamCurrent: Source[Env, NotUsed]
 
-  def streamLive: Source[EventEnvelope, NotUsed]
+  def streamLive: Source[Env, NotUsed]
 
   private var _curSeqNum: Long = 0
   private var _live = false
@@ -31,6 +34,8 @@ trait QueryStream extends Actor {
   }
 
   def handleStreamEvents(msg: Any): Unit = msg match {
+    case evt@EventEnvelope2(_, _, snr, _) =>
+      _curSeqNum = snr
     case evt@EventEnvelope(_, _, snr, _) =>
       _curSeqNum = snr
     case LiveEvents =>
