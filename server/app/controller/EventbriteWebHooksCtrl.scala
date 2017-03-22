@@ -1,6 +1,6 @@
 package controller
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
 import auth.DefaultEnv
 import com.mohiva.play.silhouette.api.Silhouette
@@ -15,10 +15,11 @@ import serenity.eventbrite._
 
 import scala.concurrent.Future
 
+case class EventbriteWebHookConfig(secret: String)
 @Singleton
 class EventbriteWebHooksCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],
-    @Named("eventbrite.secret") eventbriteSecret: String,
+    config: EventbriteWebHookConfig,
     eventbriteService: EventbriteService
 ) extends RouterCtrl with Controller with WebHookInfoJson {
 
@@ -32,7 +33,7 @@ class EventbriteWebHooksCtrl @Inject()(
 
   def webHook(store: EventbriteStore.Store, secret: String) = UnsecuredAction.async(parse.json) {
     request =>
-      if (eventbriteSecret != secret)
+      if (config.secret != secret)
         Future.successful(Results.Unauthorized("Unauthorized"))
       else {
         val info = request.body.as[WebHookDetails]

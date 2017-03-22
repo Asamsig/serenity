@@ -1,11 +1,14 @@
 package setup
 
 import com.google.inject.AbstractModule
-import controller.{EventbriteWebHooksCtrl, HospesImportCtrl, LoginCtrl, PingCtrl}
+import controller._
 import controller.helpers.RouterCtrl
+import net.ceedubs.ficus.Ficus._
+import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import play.api.{Configuration, Environment}
 import play.api.libs.concurrent.AkkaGuiceSupport
+import serenity.eventbrite.EventbriteTokens
 import serenity.users.UserManagerActor
 
 class SerenityModule( environment: Environment, config: Configuration) extends AbstractModule with AkkaGuiceSupport with ScalaModule {
@@ -17,10 +20,9 @@ class SerenityModule( environment: Environment, config: Configuration) extends A
     ctrls.addBinding.to[LoginCtrl].asEagerSingleton()
     ctrls.addBinding.to[PingCtrl].asEagerSingleton()
 
-
-    bind[String].annotatedWithName("eventbrite.secret").toInstance(config.getString("serenity.eventbrite.secret").get)
-    bind[String].annotatedWithName("eventbrite.javabin.token").toInstance(config.getString("serenity.eventbrite.javabin.token").get)
-    bind[String].annotatedWithName("eventbrite.javazone.token").toInstance(config.getString("serenity.eventbrite.javazone.token").get)
+    bind[EventbriteWebHookConfig]
+        .toInstance(EventbriteWebHookConfig(config.underlying.getString("serenity.eventbrite.secret")))
+    bind[EventbriteTokens].toInstance(config.underlying.as[EventbriteTokens]("serenity.eventbrite.token"))
     bindActor[UserManagerActor]("UserManagerActor", (p) => UserManagerActor.apply())
   }
 

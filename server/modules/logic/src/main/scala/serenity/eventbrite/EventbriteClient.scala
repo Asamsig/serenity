@@ -1,6 +1,6 @@
 package serenity.eventbrite
 
-import javax.inject.{Inject, Named}
+import javax.inject.Inject
 
 import play.api.Logger
 import play.api.http.{Status => HttpStatus}
@@ -10,10 +10,11 @@ import serenity.eventbrite.EventbriteStore.Store
 
 import scala.concurrent.Future
 
+case class EventbriteTokens(javabin: String, javazone: String)
+
 class EventbriteClient @Inject()(
     ws: WSClient,
-    @Named("eventbrite.javabin.token") javaBinToken: String,
-    @Named("eventbrite.javazone.token") javaZoneToken: String
+    tokens : EventbriteTokens
 ) extends EventbriteApiDtoJson {
 
   val logger = Logger(classOf[EventbriteClient])
@@ -21,8 +22,8 @@ class EventbriteClient @Inject()(
   def attendee(url: String, store: Store): Future[Attendee] = {
     ws.url(url)
         .withQueryString(("token", store match {
-          case EventbriteStore.javaBin => javaBinToken
-          case EventbriteStore.javaZone => javaZoneToken
+          case EventbriteStore.javaBin => tokens.javabin
+          case EventbriteStore.javaZone => tokens.javazone
         }))
         .get().map(r => r.status match {
       case HttpStatus.OK =>
