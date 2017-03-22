@@ -1,6 +1,6 @@
 import com.trueaccord.scalapb.compiler.{Version => SbVersion}
 import play.sbt.PlayImport
-import sbt._
+import sbt.{Resolver, _}
 
 object Versions {
   val akka = "2.4.11"
@@ -12,6 +12,12 @@ object Versions {
 }
 
 object Dependencies {
+
+  val resolvers = DefaultOptions.resolvers(snapshot = true) ++ Seq(
+    "Atlassian Releases" at "https://maven.atlassian.com/public/",
+    Resolver.jcenterRepo
+  )
+
   private val akka = Seq(
     "com.typesafe.akka" %% "akka-actor" % Versions.akka
   )
