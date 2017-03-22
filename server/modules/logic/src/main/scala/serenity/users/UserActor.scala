@@ -2,17 +2,16 @@ package serenity.users
 
 import java.time.LocalDate
 
-import akka.actor.Props
+import akka.actor.{ActorLogging, Props}
 import akka.actor.Status.{Failure, Success}
 import akka.persistence.PersistentActor
 import serenity.cqrs.{EventMeta, Evt}
 import serenity.eventbrite._
-import serenity.protobuf.userevents.MembershipUpdateMessage.EventbriteInformation
 import serenity.users.UserReadProtocol._
 import serenity.users.UserWriteProtocol.{HospesAuthSource, _}
 import serenity.users.domain._
 
-class UserActor(id: UserId) extends PersistentActor {
+class UserActor(id: UserId) extends PersistentActor with ActorLogging {
 
   private var user: Option[User] = None
   private var credentials: Option[BasicAuth] = None
@@ -23,6 +22,7 @@ class UserActor(id: UserId) extends PersistentActor {
     case msg: UserUpdatedEvt => updateUserModel(msg)
     case msg: HospesUserImportEvt => updateUserModel(msg)
     case msg: MembershipUpdateEvt => updateUserModel(msg)
+    case msg: BasicAuthEvt => credentials = Some(HospesAuth(msg.password, msg.salt))
   }
 
   override def receiveCommand: Receive = {
@@ -65,10 +65,18 @@ class UserActor(id: UserId) extends PersistentActor {
     case GetUser(queriedId) =>
       if (id != queriedId) sender() ! UserNotFound
       else sender() ! user.map(UserResponse).getOrElse(UserNotFound)
-    case GetUserCredentials(cred) =>
-      if (hasEmail(cred)) sender() ! credentials.map(UserCredentialsResponse).getOrElse(CredentialsNotFound)
-      else sender() ! CredentialsNotFound
-    case m@_ => sender() ! Failure(new IllegalArgumentException("Unhandled message"))
+    case GetUserCredentials(email) =>
+      if (hasEmail(email)) {
+        if (credentials.isEmpty) {
+          log.info(s"No credentials for user ${user.map(_.uuid)} requesting $email")
+        }
+        sender() ! credentials.map(UserCredentialsResponse).getOrElse(CredentialsNotFound)
+      } else {
+        log.info(s"Email $email not recognized for user ${user.map(_.uuid)} ${user.map(_.allEmail)}")
+        sender() ! CredentialsNotFound
+      }
+
+    case m@_ => sender() ! Failure(new IllegalArgumentException(s"Unhandled message of type ${m.getClass}"))
   }
 
   private def toMembershipEvent(attendee: Attendee, m: AttendeeMeta): Option[MembershipUpdateEvt] = {
@@ -100,8 +108,7 @@ class UserActor(id: UserId) extends PersistentActor {
   }
 
   private def hasEmail(email: String): Boolean =
-    user.exists(_.emails.exists(_.address == email)) ||
-        user.exists(_.mainEmail.address == email)
+    user.exists(_.allEmail.exists(_.address == email))
 
   private def updateUserModel(evt: Evt) =
     evt match {

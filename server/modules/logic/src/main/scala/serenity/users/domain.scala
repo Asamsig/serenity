@@ -55,7 +55,10 @@ object domain {
       address: Option[String] = None,
 
       roles: Set[Role] = Set(),
-      memberships: Set[Membership] = Set()) extends Identity
+      memberships: Set[Membership] = Set()) extends Identity {
+
+    def allEmail = mainEmail :: emails.toList
+  }
 
   case class Email(
       address: String,
