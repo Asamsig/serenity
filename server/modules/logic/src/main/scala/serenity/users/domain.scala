@@ -13,16 +13,18 @@ object domain {
 
   sealed trait BasicAuth {
     def password: String
-    def salt: String
+    def salt: Option[String]
   }
 
   case class HospesAuth(
       password: String,
-      salt: String) extends BasicAuth
+      salt: Option[String]) extends BasicAuth
 
   case class SerenityAuth(
-      password: String,
-      salt: String) extends BasicAuth
+      password: String
+  ) extends BasicAuth {
+    val salt: Option[String] = None
+  }
 
   case class Membership(
       from: Date,

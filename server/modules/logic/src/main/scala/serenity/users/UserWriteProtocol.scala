@@ -32,24 +32,28 @@ object UserWriteProtocol {
       phonenumber: Option[String],
       password_pw: String,
       password_slt: String,
-      memberships: Set[HospesMembership])
+      memberships: Set[HospesMembership]
+  )
 
   case class HospesMembership(
       id: Int,
-      year: Int)
+      year: Int
+  )
 
   case class HospesImportCmd(user: HospesUser) extends Cmd
 
   case class BasicAuthEvt(
       id: UserId,
       password: String,
-      salt: String, // todo make optional
+      salt: Option[String] = None,
       source: AuthSource = SerenityAuthSource,
       meta: EventMeta = EventMeta()
   ) extends Evt
 
   sealed trait AuthSource
+
   case object SerenityAuthSource extends AuthSource
+
   case object HospesAuthSource extends AuthSource
 
   case class HospesUserImportEvt(
@@ -88,6 +92,8 @@ object UserWriteProtocol {
       eventbirteMeta: Option[EventbriteMeta],
       meta: EventMeta = EventMeta()
   ) extends Evt
+
+  case class UpdateCredentialsCmd(email: String, hashedPassword: String) extends Cmd
 
 }
 

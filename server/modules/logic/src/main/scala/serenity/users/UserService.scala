@@ -8,6 +8,7 @@ import akka.util.Timeout
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import serenity.users.UserReadProtocol._
+import serenity.users.UserWriteProtocol.UpdateCredentialsCmd
 import serenity.users.domain.{BasicAuth, User}
 
 import scala.concurrent.Future
@@ -38,7 +39,7 @@ class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRe
   def findAuth(email: String): Future[Option[BasicAuth]] = {
     (userManagerActor ? GetUserCredentials(email)).map {
       case UserCredentialsResponse(auth) =>
-        logger.debug(s"Fount credentials for user with email $email")
+        logger.debug(s"Found credentials for user with email $email")
         Some(auth)
 
       case CredentialsNotFound =>
@@ -49,6 +50,14 @@ class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRe
         logger.warn(s"No credentials found for user with $email." +
             s" Found an unexpected response of type ${m.getClass}")
         None
+    }
+  }
+
+  def updateCredentials(email: String, hashedPassword: String): Future[BasicAuth] = {
+    (userManagerActor ? UpdateCredentialsCmd(email, hashedPassword)).map {
+      case UserCredentialsResponse(auth) =>
+        logger.debug(s"Updated credentials for user with email $email")
+        auth
     }
   }
 

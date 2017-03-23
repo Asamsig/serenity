@@ -2,8 +2,8 @@ package serenity.users
 
 import java.time.LocalDate
 
-import akka.actor.{ActorLogging, Props}
 import akka.actor.Status.{Failure, Success}
+import akka.actor.{ActorLogging, Props}
 import akka.persistence.PersistentActor
 import serenity.cqrs.{EventMeta, Evt}
 import serenity.eventbrite._
@@ -22,16 +22,18 @@ class UserActor(id: UserId) extends PersistentActor with ActorLogging {
     case msg: UserUpdatedEvt => updateUserModel(msg)
     case msg: HospesUserImportEvt => updateUserModel(msg)
     case msg: MembershipUpdateEvt => updateUserModel(msg)
-    case msg: BasicAuthEvt => credentials = Some(HospesAuth(msg.password, msg.salt))
+    case msg: BasicAuthEvt => updateCredentialModel(msg)
   }
 
   override def receiveCommand: Receive = {
+
     case cmd: HospesImportCmd if user.isDefined =>
       sender() ! Failure(ValidationFailed("User exist"))
+
     case HospesImportCmd(hospesUser) =>
       persistAll(List(
         toHospesUserEvent(id, hospesUser),
-        BasicAuthEvt(id, hospesUser.password_pw, hospesUser.password_slt, HospesAuthSource)
+        BasicAuthEvt(id, hospesUser.password_pw, Some(hospesUser.password_slt), HospesAuthSource)
       ) ++ hospesUser.memberships
           .map(m => MembershipUpdateEvt(
             LocalDate.of(m.year, 1, 1),
@@ -46,6 +48,7 @@ class UserActor(id: UserId) extends PersistentActor with ActorLogging {
         case evt: MembershipUpdateEvt =>
           updateUserModel(evt)
       }
+
     case cmd@CreateOrUpdateUserCmd(attendee) =>
       val p = attendee.profile
       val m = attendee.attendeeMeta
@@ -62,9 +65,20 @@ class UserActor(id: UserId) extends PersistentActor with ActorLogging {
         case evt: MembershipUpdateEvt =>
           updateUserModel(evt)
       }
+
+    case UpdateCredentialsCmd(email, hashedPassword) =>
+      if (user.isEmpty) sender() ! UserNotFound
+      else user.foreach(u => {
+        persist(BasicAuthEvt(u.uuid, hashedPassword)) { evt =>
+          updateUserModel(evt)
+          sender() ! UserCredentialsResponse(credentials.get)
+        }
+      })
+
     case GetUser(queriedId) =>
       if (id != queriedId) sender() ! UserNotFound
       else sender() ! user.map(UserResponse).getOrElse(UserNotFound)
+
     case GetUserCredentials(email) =>
       if (hasEmail(email)) {
         if (credentials.isEmpty) {
@@ -109,6 +123,13 @@ class UserActor(id: UserId) extends PersistentActor with ActorLogging {
 
   private def hasEmail(email: String): Boolean =
     user.exists(_.allEmail.exists(_.address == email))
+
+  private def updateCredentialModel(msg: BasicAuthEvt) = {
+    msg.source match {
+      case HospesAuthSource => credentials = Some(HospesAuth(msg.password, msg.salt))
+      case SerenityAuthSource => credentials = Some(SerenityAuth(msg.password))
+    }
+  }
 
   private def updateUserModel(evt: Evt) =
     evt match {

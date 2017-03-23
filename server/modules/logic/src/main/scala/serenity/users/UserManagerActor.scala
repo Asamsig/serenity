@@ -40,6 +40,12 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
       sender() ! Failure(ValidationFailed("User exist"))
     case cmd@HospesImportCmd(usr) =>
       createAccount(cmd, usr.email.head.address)
+
+    case cmd@UpdateCredentialsCmd(email, _) if !state.emailExists(email) =>
+      sender() ! Failure(ValidationFailed("User does not exist"))
+    case cmd@UpdateCredentialsCmd(email, _) =>
+      forwardToActor(cmd, email)
+
   }
 
   def events: Receive = {
