@@ -74,6 +74,19 @@ class UserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with ScalaFut
       res mustBe Some(auth)
     }
 
+    "find user id by email" in {
+      val usr = User(
+        uuid = UUID.randomUUID(),
+        mainEmail = uniqueEmail,
+        createdDate = UtcDateTime.nowUTC()
+      )
+
+      repo.saveUser(usr).futureValue
+      val res = repo.findUserIdByEmail(usr.mainEmail.address).futureValue
+
+      res.map(_.underling) mustBe Some(usr.uuid)
+    }
+
     def matchUser(actual: User, expected: User) = {
       actual.uuid mustBe expected.uuid
       actual.firstName mustBe expected.firstName

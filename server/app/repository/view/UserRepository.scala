@@ -122,6 +122,11 @@ class UserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) ext
     db.run(query)
   }
 
+  def findUserIdByEmail(email: String): Future[Option[UserId]] = {
+    val query = userEmailsTable.filter(_.email === email).map(_.userId)
+    db.run(query.result.headOption)
+  }
+
   def credentialsByEmail(email: String): Future[Option[BasicAuth]] = {
     val query = for {
       (_, cred) <- userEmailsTable.filter(_.email === email).join(userCredentialsTable).on(_.userId === _.userId)
