@@ -1,30 +1,28 @@
 package controllers
 
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 
-import akka.actor.ActorRef
-import akka.pattern.ask
 import akka.util.Timeout
 import auth.{DefaultEnv, WithRole}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
+import models.hospes.{MembershipJson, PersonJson}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc.BodyParsers.parse
 import play.api.mvc.{Result, Results}
 import play.api.routing.Router
 import play.api.routing.sird._
-import models.hospes.{MembershipJson, PersonJson}
 import repositories.eventsource.users.domain.AdminRole
-import services.ImportFromHospes
+import services.HospesImportService
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 @Singleton
 class HospesImportCtrl @Inject()(
-    @Named("UserManagerActor") userManagerActor: ActorRef,
+    hospesImportService: HospesImportService,
     silhouette: Silhouette[DefaultEnv]
 ) extends HospesImportCtrlFormats with RouterCtrl {
 
@@ -52,17 +50,9 @@ class HospesImportCtrl @Inject()(
       }
 
   def executeImport(pJson: List[PersonJson], mJson: List[MembershipJson]): Result = {
-    val result: Future[List[Any]] = Future.sequence(ImportFromHospes.apply(mJson, pJson).map(userManagerActor ? _))
-    val (sCount, fCount) = Await.result(result, timeout.duration).foldLeft((0, 0)) { case ((s, f), msg) => msg match {
-      case Success(_) => (s + 1, 0)
-      case Failure(m) => (0, f + 1)
-      case "User created" => (s + 1, f)
-      case m => (s, f)
-    }
-    }
+    val (sCount, fCount) = hospesImportService.executeImport(pJson, mJson)
     Results.Ok(s"Input: ${pJson.size}\nSuccesses: $sCount\nFailures: $fCount")
   }
-
 }
 
 trait HospesImportCtrlFormats {

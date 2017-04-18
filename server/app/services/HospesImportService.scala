@@ -1,13 +1,40 @@
 package services
 
+import javax.inject.{Inject, Named}
+
+import akka.actor.ActorRef
+import akka.pattern.ask
+import akka.util.Timeout
 import models.hospes.{MembershipJson, PersonJson}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesMembership, HospesUser}
 import repositories.eventsource.users.domain.Email
 
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import scala.util.{Failure, Success}
 
-object ImportFromHospes {
+class HospesImportService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRef) {
 
-  def apply(mJson: List[MembershipJson], pJson: List[PersonJson]): List[HospesImportCmd] = {
+  implicit val timeout: Timeout = 120.seconds
+
+  def executeImport(pJson: List[PersonJson], mJson: List[MembershipJson]): (Int, Int) = {
+    val result: Future[List[Any]] = Future.sequence(
+      findUniqueUsersWithMembership(mJson, pJson).map(userManagerActor ? _))
+    Await.result(result, timeout.duration).foldLeft((0, 0)) {
+      case ((s, f), msg) => msg match {
+        case Success(_) => (s + 1, 0)
+        case Failure(m) => (0, f + 1)
+        case "User created" => (s + 1, f)
+        case m => (s, f)
+      }
+    }
+  }
+
+  def findUniqueUsersWithMembership(
+      mJson: List[MembershipJson],
+      pJson: List[PersonJson]
+  ): List[HospesImportCmd] = {
     val fm = mJson
         .filter(_.member_person_id.isDefined)
         .groupBy(_.member_person_id.getOrElse(0))
@@ -61,4 +88,5 @@ object ImportFromHospes {
         identifiedPhone.map(p => toPerson(p._2)).toList :::
         others.map(p => toPerson(p._2)).toList
   }
+
 }
