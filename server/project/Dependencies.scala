@@ -56,9 +56,9 @@ object Dependencies {
     PlayImport.evolutions
   )
 
-  val playDependencies = akka ++ test ++ silhouette ++ root
+  val playDependencies = akka ++ persistence ++ test ++ silhouette ++ root
 
-  val logicDependencies = akka ++ persistence ++ test ++ silhouette ++ Seq(
-    "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf",
-    PlayImport.ws)
+  val protobufDependencies = Seq(
+    "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf"
+    )
 }
