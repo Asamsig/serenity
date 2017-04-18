@@ -1,15 +1,15 @@
 package setup
 
 import com.google.inject.AbstractModule
-import controller._
-import controller.helpers.RouterCtrl
+import controllers._
+import controllers.helpers.RouterCtrl
 import net.ceedubs.ficus.Ficus._
 import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import play.api.{Configuration, Environment}
 import play.api.libs.concurrent.AkkaGuiceSupport
-import serenity.eventbrite.EventbriteTokens
-import serenity.users.UserManagerActor
+import services.eventbrite.EventbriteTokens
+import repositories.eventsource.users.UserManagerActor
 
 class SerenityModule( environment: Environment, config: Configuration) extends AbstractModule with AkkaGuiceSupport with ScalaModule {
 

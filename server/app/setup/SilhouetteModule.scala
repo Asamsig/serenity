@@ -1,6 +1,6 @@
 package setup
 
-import auth.{DefaultEnv, HospesPasswordHasher, PasswordAuth, UserIdentityService}
+import auth.{DefaultEnv, HospesPasswordHasher, PasswordAuth}
 import com.google.inject.name.Named
 import com.google.inject.{AbstractModule, Provides}
 import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncoder}
@@ -20,6 +20,7 @@ import net.ceedubs.ficus.readers.ValueReader
 import net.codingwell.scalaguice.ScalaModule
 import play.api.Configuration
 import play.api.libs.concurrent.Execution.Implicits._
+import services.UserIdentityService
 
 import scala.concurrent.duration.FiniteDuration
 

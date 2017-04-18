@@ -3,7 +3,7 @@ package auth
 import com.mohiva.play.silhouette.api.Authorization
 import com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator
 import play.api.mvc.Request
-import serenity.users.domain.{Role, User}
+import repositories.eventsource.users.domain.{Role, User}
 
 import scala.concurrent.Future
 

@@ -2,7 +2,7 @@ package auth
 
 import com.mohiva.play.silhouette.api.Env
 import com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator
-import serenity.users.domain.User
+import repositories.eventsource.users.domain.User
 
 
 trait DefaultEnv extends Env {
