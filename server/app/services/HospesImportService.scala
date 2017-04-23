@@ -6,6 +6,7 @@ import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 import models.hospes.{MembershipJson, PersonJson}
+import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesMembership, HospesUser}
 import repositories.eventsource.users.domain.Email
@@ -16,17 +17,25 @@ import scala.util.{Failure, Success}
 
 class HospesImportService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRef) {
 
+  val logger = Logger(classOf[HospesImportService])
   implicit val timeout: Timeout = 120.seconds
 
   def executeImport(pJson: List[PersonJson], mJson: List[MembershipJson]): (Int, Int) = {
+    logger.info("Starting importing users")
     val result: Future[List[Any]] = Future.sequence(
       findUniqueUsersWithMembership(mJson, pJson).map(userManagerActor ? _))
     Await.result(result, timeout.duration).foldLeft((0, 0)) {
       case ((s, f), msg) => msg match {
-        case Success(_) => (s + 1, 0)
-        case Failure(m) => (0, f + 1)
-        case "User created" => (s + 1, f)
-        case m => (s, f)
+        case Success(_) =>
+          (s + 1, 0)
+        case Failure(m) =>
+          logger.info(s"import of user with error ${m.getMessage}", m)
+          (0, f + 1)
+        case "User created" =>
+          (s + 1, f)
+        case m =>
+          logger.info(s"Unhandled response $m")
+          (s, f)
       }
     }
   }
@@ -84,9 +93,11 @@ class HospesImportService @Inject()(@Named("UserManagerActor") userManagerActor:
 
     val resId: Set[Int] = groupedByName.values.flatMap(_.map(_.id)).toSet
 
-    fp.filter(p => !resId.contains(p.id)).map(f => toPerson(List(f))) :::
+    val res = fp.filter(p => !resId.contains(p.id)).map(f => toPerson(List(f))) :::
         identifiedPhone.map(p => toPerson(p._2)).toList :::
         others.map(p => toPerson(p._2)).toList
+    logger.info(s"Import filtered to ${res.size} users")
+    res
   }
 
 }
