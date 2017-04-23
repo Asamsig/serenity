@@ -7,10 +7,11 @@ import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery2, EventsByTagQue
 import akka.persistence.query.{EventEnvelope2, PersistenceQuery}
 import models.Cmd
 import repositories.eventsource.QueryStream.LiveEvents
-import repositories.eventsource.{DomainReadEventAdapter, TagQueryStream, Tags}
-import repositories.eventsource.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
+import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol._
 import repositories.eventsource.users.domain._
+import repositories.eventsource.{DomainReadEventAdapter, TagQueryStream, Tags}
+import repositories.view.UserRepository
 
 import scala.util.Failure
 
@@ -89,6 +90,17 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
         }
       }
     }
+    case qry@UpdateView(uid) =>
+      if (state.emailToUsers.values.toSet.contains(uid))
+        (state.usersActor.get(uid) match {
+          case None =>
+            val createdActor = context.actorOf(userActorProps(uid))
+            state = state.startActor(uid, createdActor)
+            createdActor
+          case Some(a) => a
+        }).forward(qry)
+      else
+        Failure(ValidationFailed("User does not exist"))
   }
 
   def createAccount[C <: Cmd](cmd: C, email: String): Unit = {
@@ -114,8 +126,8 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
 }
 
 object UserManagerActor {
-  def apply(userActorProps: UserId => Props = UserActor.apply): Props =
-    Props(classOf[UserManagerActor], userActorProps)
+  def apply(repo: UserRepository, userActorProps: (UserRepository, UserId) => Props = UserActor.apply): Props =
+    Props(classOf[UserManagerActor], userActorProps.curried(repo))
 }
 
 case class UserManagerState(
@@ -123,6 +135,10 @@ case class UserManagerState(
     emailToUsers: Map[String, UserId] = Map(),
     usersActor: Map[UserId, ActorRef] = Map()
 ) {
+
+  def startActor(id: UserId, actorRef: ActorRef): UserManagerState =
+    copy(
+      usersActor = usersActor + (id -> actorRef))
 
   def createActor(id: UserId, email: String, actorRef: ActorRef): UserManagerState =
     copy(

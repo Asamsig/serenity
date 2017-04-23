@@ -9,8 +9,12 @@ import models._
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
 import repositories.eventsource.users.domain._
+import repositories.view.UserRepository
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-class UserActor(id: UserId) extends PersistentActor with ActorLogging {
+import scala.util.control.NonFatal
+
+class UserActor(id: UserId, userRepository: UserRepository) extends PersistentActor with ActorLogging {
 
   private var user: Option[User] = None
   private var credentials: Option[BasicAuth] = None
@@ -88,6 +92,15 @@ class UserActor(id: UserId) extends PersistentActor with ActorLogging {
         log.info(s"Email $email not recognized for user ${user.map(_.uuid)} ${user.map(_.allEmail)}")
         sender() ! CredentialsNotFound
       }
+    case qry@ UpdateView(uid) =>
+      user match {
+        case Some(usr) =>
+          val replyTo = sender()
+          userRepository.saveUser(usr).map(_ => replyTo ! qry).recover{
+            case NonFatal(t) => replyTo ! Failure(t)
+          }
+        case None => Failure(new IllegalStateException(s"User not found with id $uid"))
+      }
 
     case m@_ => sender() ! Failure(new IllegalArgumentException(s"Unhandled message of type ${m.getClass}"))
   }
@@ -156,7 +169,8 @@ class UserActor(id: UserId) extends PersistentActor with ActorLogging {
 
 object UserActor {
 
-  def apply(id: UserId): Props = Props.create(classOf[UserActor], id)
+  def apply(repo: UserRepository, id: UserId): Props =
+    Props.create(classOf[UserActor], id, repo)
 
 }
 

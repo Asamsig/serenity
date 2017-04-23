@@ -13,6 +13,8 @@ object UserReadProtocol {
 
   case class UserCredentialsResponse(user: BasicAuth) extends Query
 
+  case class UpdateView(id: UserId) extends Query
+
   case class UserResponse(user: User)
 
   case object UserNotFound
