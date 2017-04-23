@@ -9,9 +9,9 @@ import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import repositories.eventsource.users.domain._
 
-class UserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures with Inside {
+class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures with Inside {
 
-  val repo = app.injector.instanceOf(classOf[UserRepository])
+  val repo = app.injector.instanceOf(classOf[SqlUserRepository])
 
   def uniqueEmail = Email(s"${UUID.randomUUID()}@java.no", validated = true)
 

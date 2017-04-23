@@ -34,9 +34,10 @@ object Dependencies {
   )
 
   private val test = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % "test",
-    "com.typesafe.akka"      %% "akka-testkit" % Versions.akka % "test",
-    "com.github.dnvriend"    %% "akka-persistence-inmemory" % "1.3.18" % "test"
+    "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
+    "com.typesafe.akka"      %% "akka-testkit" % Versions.akka % Test,
+    "com.github.dnvriend"    %% "akka-persistence-inmemory" % "1.3.18" % Test,
+    "org.scalamock"          %% "scalamock-scalatest-support" % "3.5.0" % Test
   )
 
   private val silhouette = Seq(

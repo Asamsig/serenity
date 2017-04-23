@@ -8,23 +8,27 @@ import akka.persistence.query.{EventEnvelope2, Sequence}
 import akka.testkit.TestProbe
 import helpers.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import models._
+import org.scalamock.scalatest.MockFactory
 import repositories.eventsource.users.UserManagerActorFixtures.beerDuke
 import repositories.eventsource.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
 import repositories.eventsource.users.UserWriteProtocol._
 import repositories.eventsource.users.domain.{Email, UserId}
+import repositories.view.UserRepository
 
 import scala.util.Failure
 
 class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.inMemoryPersistence())
-    with InMemoryCleanup {
+    with InMemoryCleanup with MockFactory{
+
+  val repo = stub[UserRepository]
 
   class DefaultTestSetup {
     val probe: TestProbe = new TestProbe(system)
-    val props: (UserId) => Props = (id: UserId) => {
+    val props: (UserRepository, UserId) => Props = (_: UserRepository, id: UserId) => {
       val ref: ActorRef = probe.ref
       Props(classOf[UsrActor], id, ref)
     }
-    val actor: ActorRef = system.actorOf(UserManagerActor(props))
+    val actor: ActorRef = system.actorOf(UserManagerActor(repo, props))
   }
 
   def defaultSetup() = new DefaultTestSetup

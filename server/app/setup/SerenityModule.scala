@@ -12,7 +12,7 @@ import net.codingwell.scalaguice.{ScalaModule, ScalaMultibinder}
 import play.api.libs.concurrent.AkkaGuiceSupport
 import play.api.{Configuration, Environment}
 import repositories.eventsource.users.UserManagerActor
-import repositories.view.UserRepository
+import repositories.view.{SqlUserRepository, UserRepository}
 import services.eventbrite.EventbriteTokens
 
 class SerenityModule(environment: Environment, config: Configuration) extends AbstractModule with AkkaGuiceSupport with ScalaModule {
@@ -24,6 +24,8 @@ class SerenityModule(environment: Environment, config: Configuration) extends Ab
     ctrls.addBinding.to[LoginCtrl].asEagerSingleton()
     ctrls.addBinding.to[PingCtrl].asEagerSingleton()
     ctrls.addBinding.to[AdminCtrl].asEagerSingleton()
+
+    bind[UserRepository].to[SqlUserRepository]
 
     bind[EventbriteWebHookConfig]
         .toInstance(EventbriteWebHookConfig(config.underlying.getString("serenity.eventbrite.secret")))

@@ -6,11 +6,11 @@ import akka.actor.Status.{Failure, Success}
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.PersistentActor
 import models._
+import repositories.view.{UserRepository, UserId => UId}
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
 import repositories.eventsource.users.domain._
-import repositories.view.UserRepository
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 import scala.util.control.NonFatal
 
@@ -22,10 +22,10 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
   override def persistenceId: String = s"user-${id.toString}"
 
   override def receiveRecover: Receive = {
-    case msg: UserUpdatedEvt => updateUserModel(msg)
-    case msg: HospesUserImportEvt => updateUserModel(msg)
-    case msg: MembershipUpdateEvt => updateUserModel(msg)
-    case msg: BasicAuthEvt => updateCredentialModel(msg)
+    case msg: UserUpdatedEvt => updateUserModel(msg, isLive = false)
+    case msg: HospesUserImportEvt => updateUserModel(msg, isLive = false)
+    case msg: MembershipUpdateEvt => updateUserModel(msg, isLive = false)
+    case msg: BasicAuthEvt => updateCredentialModel(msg, isLive = false)
   }
 
   override def receiveCommand: Receive = {
@@ -92,11 +92,11 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
         log.info(s"Email $email not recognized for user ${user.map(_.uuid)} ${user.map(_.allEmail)}")
         sender() ! CredentialsNotFound
       }
-    case qry@ UpdateView(uid) =>
+    case qry@UpdateView(uid) =>
       user match {
         case Some(usr) =>
           val replyTo = sender()
-          userRepository.saveUser(usr).map(_ => replyTo ! qry).recover{
+          userRepository.saveUser(usr).map(_ => replyTo ! qry).recover {
             case NonFatal(t) => replyTo ! Failure(t)
           }
         case None => Failure(new IllegalStateException(s"User not found with id $uid"))
@@ -136,14 +136,21 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
   private def hasEmail(email: String): Boolean =
     user.exists(_.allEmail.exists(_.address == email))
 
-  private def updateCredentialModel(msg: BasicAuthEvt) = {
+  private def updateCredentialModel(msg: BasicAuthEvt, isLive: Boolean = true) = {
     msg.source match {
       case HospesAuthSource => credentials = Some(HospesAuth(msg.password, msg.salt))
       case SerenityAuthSource => credentials = Some(SerenityAuth(msg.password))
     }
+    if (isLive)
+      for {
+        u <- user
+        c <- credentials
+
+      } yield userRepository.saveCredentials(new UId(u.uuid), c)
+
   }
 
-  private def updateUserModel(evt: Evt) =
+  private def updateUserModel(evt: Evt, isLive: Boolean = true) = {
     evt match {
       case evt: HospesUserImportEvt => user = EventToUser(evt)
       case evt: UserUpdatedEvt => user = EventToUser(evt, user)
@@ -165,6 +172,9 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
       })
       case _ =>
     }
+    if (isLive) user.foreach(userRepository.saveUser)
+  }
+
 }
 
 object UserActor {
