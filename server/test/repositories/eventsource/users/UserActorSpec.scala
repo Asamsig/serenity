@@ -1,14 +1,13 @@
 package repositories.eventsource.users
 
-import java.util.UUID
-
 import akka.actor.ActorRef
 import akka.actor.Status.{Failure, Success}
 import helpers.akka.{AkkaConfig, AkkaSuite}
+import models.UserId
 import org.scalamock.scalatest.MockFactory
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesUser, ValidationFailed}
-import repositories.eventsource.users.domain.{Email, UserId}
+import repositories.eventsource.users.domain.Email
 import repositories.view.UserRepository
 
 class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersistence()) with MockFactory{
@@ -23,14 +22,14 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
   describe("Persist and Query") {
 
     it("should handle hospes imports") {
-      val userActor: ActorRef = system.actorOf(UserActor(repo, UUID.randomUUID()))
+      val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
       userActor ! HospesImportCmd(hospesUser)
 
       expectMsgClass(classOf[Success])
     }
 
     it("should handle fail when importing same user") {
-      val userActor: ActorRef = system.actorOf(UserActor(repo, UUID.randomUUID()))
+      val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
 
       userActor ! HospesImportCmd(hospesUser)
       expectMsgClass(classOf[Success])
@@ -41,7 +40,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
     }
 
     it("should handle query for user") {
-      val userId: UserId = UUID.randomUUID()
+      val userId: UserId = UserId.generate()
       val userActor: ActorRef = system.actorOf(UserActor(repo, userId))
       userActor ! HospesImportCmd(hospesUser)
       expectMsgClass(classOf[Success])
@@ -51,7 +50,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
     }
 
     it("should read up state after shutdown") {
-      val userId: UserId = UUID.randomUUID()
+      val userId: UserId = UserId.generate()
       val originUserActor: ActorRef = system.actorOf(UserActor(repo, userId))
       originUserActor ! HospesImportCmd(hospesUser)
       expectMsgClass(classOf[Success])
@@ -66,7 +65,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
 
     it("should return BasicAuth when credentials exists") {
       val plainPwd = "myS3cr3tPwd"
-      val userActor: ActorRef = system.actorOf(UserActor(repo, UUID.randomUUID()))
+      val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
       val usr = hospesUser
       userActor ! HospesImportCmd(usr)
 
@@ -79,7 +78,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
 
     it("should return CredentialsNotFound when credentials doesn't exists ") {
       val plainPwd = "myS3cr3tPwd"
-      val userActor: ActorRef = system.actorOf(UserActor(repo, UUID.randomUUID()))
+      val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
       val usr = hospesUser
       userActor ! HospesImportCmd(usr)
 

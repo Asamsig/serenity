@@ -18,7 +18,7 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
   "user repository" should {
     "insert basic user without fault" in {
       val usr = User(
-        uuid = UUID.randomUUID(),
+        userId = UserId.generate(),
         mainEmail = uniqueEmail,
         createdDate = time.dateTimeNow()
       )
@@ -27,7 +27,7 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
 
     "insert and get user" in {
       val usr = User(
-        uuid = UUID.randomUUID(),
+        userId = UserId.generate(),
         firstName = Some("first"),
         lastName = Some("last"),
         mainEmail = uniqueEmail,
@@ -53,21 +53,21 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
       )
 
       repo.saveUser(usr).futureValue
-      val res = repo.fetchUserById(UserId(usr.uuid)).futureValue
+      val res = repo.fetchUserById(usr.userId).futureValue
 
       inside(res) { case Some(u) => matchUser(u, usr) }
     }
 
     "find credentials by email" in {
       val usr = User(
-        uuid = UUID.randomUUID(),
+        userId = UserId.generate(),
         mainEmail = uniqueEmail,
         createdDate = time.dateTimeNow()
       )
       val auth = HospesAuth("pwd", Some("salt"))
 
       repo.saveUser(usr).futureValue
-      repo.saveCredentials(UserId(usr.uuid), auth).futureValue
+      repo.saveCredentials(usr.userId, auth).futureValue
 
       val res = repo.credentialsByEmail(usr.mainEmail.address).futureValue
 
@@ -76,7 +76,7 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
 
     "find user id by email" in {
       val usr = User(
-        uuid = UUID.randomUUID(),
+        userId = UserId.generate(),
         mainEmail = uniqueEmail,
         createdDate = time.dateTimeNow()
       )
@@ -84,11 +84,11 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
       repo.saveUser(usr).futureValue
       val res = repo.findUserIdByEmail(usr.mainEmail.address).futureValue
 
-      res.map(_.underling) mustBe Some(usr.uuid)
+      res.map(_.underling) mustBe Some(usr.userId)
     }
 
     def matchUser(actual: User, expected: User) = {
-      actual.uuid mustBe expected.uuid
+      actual.userId mustBe expected.userId
       actual.firstName mustBe expected.firstName
       actual.lastName mustBe expected.lastName
       actual.phone mustBe expected.phone

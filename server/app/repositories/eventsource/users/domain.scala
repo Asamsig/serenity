@@ -1,13 +1,12 @@
 package repositories.eventsource.users
 
 import java.time.{LocalDate, LocalDateTime}
-import java.util.UUID
 
 import com.mohiva.play.silhouette.api.Identity
+import models.UserId
 
 object domain {
 
-  type UserId = UUID
   type DateTime = LocalDateTime
   type Date = LocalDate
 
@@ -56,7 +55,7 @@ object domain {
   }
 
   case class User(
-      uuid: UserId,
+      userId: UserId,
       mainEmail: Email,
       emails: Seq[Email] = Seq(),
       phone: Option[String] = None,

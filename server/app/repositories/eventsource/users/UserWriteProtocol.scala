@@ -2,8 +2,8 @@ package repositories.eventsource.users
 
 import java.time.LocalDate
 
-import models.{Attendee, Cmd, EventMeta, Evt}
-import repositories.eventsource.users.domain.{Email, EventbriteMeta, MembershipIssuer, UserId}
+import models._
+import repositories.eventsource.users.domain.{Email, EventbriteMeta, MembershipIssuer}
 
 object UserWriteProtocol {
 

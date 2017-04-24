@@ -24,7 +24,7 @@ class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRe
   def findUser(email: String): Future[Option[User]] =
     (userManagerActor ? GetUserWithEmail(email)).map {
       case UserResponse(usr) =>
-        logger.debug(s"Found user matching email $email -> ${usr.uuid}")
+        logger.debug(s"Found user matching email $email -> ${usr.userId}")
         Some(usr)
 
       case _ =>

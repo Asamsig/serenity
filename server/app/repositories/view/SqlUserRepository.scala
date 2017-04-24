@@ -37,9 +37,8 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
     val primaryEmail = email.find(_._3)
     if (primaryEmail.isEmpty) None
     else usr.map(u => {
-      val id: domain.UserId = u._1.underling
       User(
-        uuid = id,
+        userId = u._1,
         firstName = u._2,
         lastName = u._3,
         mainEmail = toEmail(primaryEmail.get),
@@ -92,14 +91,13 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
     })
 
   def saveUser(u: User): Future[Unit] = {
-    val uid: UserId = UserId(u.uuid)
     val insertUserData = for {
-      _ <- insertUserAction(uid, u)
-      _ <- insertEmailsAction(uid, u.allEmail)
-      _ <- insertRoleAction(uid, u.roles)
-      _ <- insertMembershipAction(uid, u.memberships)
+      _ <- insertUserAction(u.userId, u)
+      _ <- insertEmailsAction(u.userId, u.allEmail)
+      _ <- insertRoleAction(u.userId, u.roles)
+      _ <- insertMembershipAction(u.userId, u.memberships)
     } yield ()
-    val res = db.run(DBIO.seq(removeUserAction(uid), insertUserData))
+    val res = db.run(DBIO.seq(removeUserAction(u.userId), insertUserData))
     res
   }
 

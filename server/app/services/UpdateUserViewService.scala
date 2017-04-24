@@ -9,10 +9,10 @@ import akka.persistence.query.{Offset, PersistenceQuery}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.util.Timeout
+import models.UserId
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol.UpdateView
 import repositories.eventsource.users.UserWriteProtocol.{HospesUserImportEvt, UserUpdatedEvt}
-import repositories.eventsource.users.domain.UserId
 import repositories.eventsource.{DomainReadEventAdapter, Tags}
 
 import scala.concurrent.Future

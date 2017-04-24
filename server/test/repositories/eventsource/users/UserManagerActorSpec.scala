@@ -1,7 +1,5 @@
 package repositories.eventsource.users
 
-import java.util.UUID
-
 import akka.actor.{ActorRef, Props}
 import akka.persistence.PersistentActor
 import akka.persistence.query.{EventEnvelope2, Sequence}
@@ -12,7 +10,7 @@ import org.scalamock.scalatest.MockFactory
 import repositories.eventsource.users.UserManagerActorFixtures.beerDuke
 import repositories.eventsource.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
 import repositories.eventsource.users.UserWriteProtocol._
-import repositories.eventsource.users.domain.{Email, UserId}
+import repositories.eventsource.users.domain.Email
 import repositories.view.UserRepository
 
 import scala.util.Failure
@@ -108,7 +106,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.
     def withEnvelope(cmd: HospesImportCmd): EventEnvelope2 = {
       EventEnvelope2(
         Sequence(1), "", 2,
-        UserWriteProtocol.toHospesUserEvent(UUID.randomUUID(), cmd.user))
+        UserWriteProtocol.toHospesUserEvent(UserId.generate(), cmd.user))
     }
 
     describe("GetUserWithEmail") {

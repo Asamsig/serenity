@@ -21,7 +21,7 @@ trait ColumnTypeMappers { self: HasDatabaseConfig[JdbcProfile] =>
   implicit val userIdMapper: BaseColumnType[UserId] =
     MappedColumnType.base[UserId, String](
       uuid => uuid.asString,
-      str => UserId.parseUnsafe(str)
+      str => UserId.unsafeFromString(str)
     )
 
   implicit val datetimeMapper: BaseColumnType[LocalDateTime] =

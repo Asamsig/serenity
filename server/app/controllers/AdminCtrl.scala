@@ -1,20 +1,19 @@
 package controllers
 
-import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 import auth.{DefaultEnv, WithRole}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
-import play.api.mvc.BodyParsers.parse
+import models.UserId
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.mvc.BodyParsers.parse
 import play.api.mvc.Results
 import play.api.routing.sird._
 import repositories.eventsource.users.domain.AdminRole
 import services.UpdateUserViewService
 
 import scala.concurrent.Future
-import scala.util.Try
 import scala.util.control.NonFatal
 
 @Singleton
@@ -37,7 +36,7 @@ class AdminCtrl @Inject()(
 
   def updateView(id: String) = SecuredAction(WithRole(AdminRole)).async(parse.empty) {
     _ =>
-      Try {UUID.fromString(id)}
+      UserId.fromString(id)
           .map(uuid => {
             updateUserViewService.updateUser(uuid)
                 .map(_ => Results.Ok)
@@ -45,11 +44,7 @@ class AdminCtrl @Inject()(
                   case NonFatal(t) => Results.InternalServerError(t.getMessage)
                 }
           })
-          .recover {
-            case e: IllegalArgumentException =>
-              Future.successful(Results.BadRequest(s"Invalid input ${e.getMessage}"))
-          }
-          .getOrElse(Future.successful(Results.InternalServerError))
+          .getOrElse(Future.successful(Results.BadRequest(s"Invalid input $id")))
   }
 
 }

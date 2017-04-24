@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.google.protobuf.Message
 import com.google.protobuf.timestamp.Timestamp
-import models.EventMeta
+import models.{EventMeta, UserId}
 import repositories.eventsource.protobuf.ProtobufFormat
 import serenity.protobuf.Userevents
 import serenity.protobuf.Userevents.BasicAuthMessage.AuthSourceEnum
@@ -57,7 +57,7 @@ object DomainProtobufFormats {
       case jm: Userevents.BasicAuthMessage =>
         val m = BasicAuthMessage.fromJavaProto(jm)
         BasicAuthEvt(
-          m.id,
+          UserId(m.id),
           m.password,
           m.salt,
           m.source.value match {
@@ -70,7 +70,7 @@ object DomainProtobufFormats {
 
     override def write(e: BasicAuthEvt): Message = {
       BasicAuthMessage.toJavaProto(BasicAuthMessage(
-        e.id,
+        e.id.underling,
         e.password,
         e.salt,
         e.source match {
@@ -87,7 +87,7 @@ object DomainProtobufFormats {
       case jm: Userevents.HospesUserImportMessage =>
         val m = HospesUserImportMessage.fromJavaProto(jm)
         HospesUserImportEvt(
-          m.id,
+          UserId(m.id),
           m.originId.toList,
           m.emails.map(em => Email(em.address, em.validated)).toList,
           m.firstName,
@@ -100,7 +100,7 @@ object DomainProtobufFormats {
 
     override def write(e: HospesUserImportEvt): Message =
       HospesUserImportMessage.toJavaProto(HospesUserImportMessage(
-        e.id,
+        e.id.underling,
         e.originId,
         e.email.map(em => EmailMessage(em.address, em.validated)),
         e.firstName,
@@ -116,7 +116,7 @@ object DomainProtobufFormats {
       case jm: Userevents.UserUpdatedMessage =>
         val m = UserUpdatedMessage.fromJavaProto(jm)
         UserUpdatedEvt(
-          m.id,
+          UserId(m.id),
           m.email.map(em => Email(em.address, em.validated)).get.address,
           m.firstName,
           m.lastName,
@@ -127,7 +127,7 @@ object DomainProtobufFormats {
 
     override def write(e: UserUpdatedEvt): Message =
       UserUpdatedMessage.toJavaProto(UserUpdatedMessage(
-        e.id,
+        e.id.underling,
         Some(EmailMessage(e.email, validated = true)),
         e.firstName,
         e.lastName,

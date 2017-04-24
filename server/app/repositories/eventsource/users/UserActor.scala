@@ -19,7 +19,7 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
   private var user: Option[User] = None
   private var credentials: Option[BasicAuth] = None
 
-  override def persistenceId: String = s"user-${id.toString}"
+  override def persistenceId: String = s"user-${id.underling.toString}"
 
   override def receiveRecover: Receive = {
     case msg: UserUpdatedEvt => updateUserModel(msg, isLive = false)
@@ -72,7 +72,7 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
     case UpdateCredentialsCmd(email, hashedPassword) =>
       if (user.isEmpty) sender() ! UserNotFound
       else user.foreach(u => {
-        persist(BasicAuthEvt(u.uuid, hashedPassword)) { evt =>
+        persist(BasicAuthEvt(u.userId, hashedPassword)) { evt =>
           updateUserModel(evt)
           sender() ! UserCredentialsResponse(credentials.get)
         }
@@ -85,11 +85,11 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
     case GetUserCredentials(email) =>
       if (hasEmail(email)) {
         if (credentials.isEmpty) {
-          log.info(s"No credentials for user ${user.map(_.uuid)} requesting $email")
+          log.info(s"No credentials for user ${user.map(_.userId)} requesting $email")
         }
         sender() ! credentials.map(UserCredentialsResponse).getOrElse(CredentialsNotFound)
       } else {
-        log.info(s"Email $email not recognized for user ${user.map(_.uuid)} ${user.map(_.allEmail)}")
+        log.info(s"Email $email not recognized for user ${user.map(_.userId)} ${user.map(_.allEmail)}")
         sender() ! CredentialsNotFound
       }
     case qry@UpdateView(uid) =>
@@ -146,7 +146,7 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
         u <- user
         c <- credentials
 
-      } yield userRepository.saveCredentials(new UserId(u.uuid), c)
+      } yield userRepository.saveCredentials(u.userId, c)
 
   }
 
@@ -202,7 +202,7 @@ object EventToUser {
       lastName = Some(evt.lastName)
     )).orElse(Some(
       User(
-        uuid = evt.id,
+        userId = evt.id,
         mainEmail = Email(evt.email, validated = true),
         createdDate = evt.meta.created,
         firstName = Some(evt.firstName),

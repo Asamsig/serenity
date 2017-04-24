@@ -1,15 +1,12 @@
 package repositories.eventsource.users
 
-import java.util.UUID
-
 import akka.actor.{ActorLogging, ActorRef, Props, Stash}
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery2, EventsByTagQuery2}
 import akka.persistence.query.{EventEnvelope2, PersistenceQuery}
-import models.Cmd
+import models.{Cmd, UserId}
 import repositories.eventsource.QueryStream.LiveEvents
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol._
-import repositories.eventsource.users.domain._
 import repositories.eventsource.{DomainReadEventAdapter, TagQueryStream, Tags}
 import repositories.view.UserRepository
 
@@ -104,7 +101,7 @@ class UserManagerActor(userActorProps: UserId => Props) extends TagQueryStream w
   }
 
   def createAccount[C <: Cmd](cmd: C, email: String): Unit = {
-    val userId: UserId = UUID.randomUUID()
+    val userId: UserId = UserId.generate()
     val userActor: ActorRef = context.actorOf(userActorProps(userId))
     state = state.createActor(userId, email, userActor)
     userActor.forward(cmd)
