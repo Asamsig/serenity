@@ -10,6 +10,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.util.Timeout
 import models.user.UserId
+import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol.UpdateView
 import repositories.eventsource.users.UserWriteProtocol.{HospesUserImportEvt, UserUpdatedEvt}
@@ -25,6 +26,8 @@ class UpdateUserViewService @Inject()(
     @Named("UserManagerActor") userManagerActor: ActorRef
 )(implicit mat: Materializer) {
 
+  val logger = Logger(classOf[UpdateUserViewService])
+
   implicit val timeout: Timeout = 360.seconds
 
   def updateAll(): Future[Any] = {
@@ -32,7 +35,7 @@ class UpdateUserViewService @Inject()(
     val source = journal.currentEventsByTag(Tags.USER_EMAIL, Offset.noOffset)
 
     val sink = Flow[UserId]
-        .mapAsync(10)(uid => this.updateUser(uid))
+        .mapAsync(1)(uid => this.updateUser(uid))
         .toMat(Sink.ignore)(Keep.right)
         .named("upd-usr-view")
 
@@ -55,10 +58,19 @@ class UpdateUserViewService @Inject()(
 
   def updateUser(userId: UserId): Future[UpdateView] = {
     val res = (userManagerActor ? UpdateView(userId)).flatMap {
-      case uv: UpdateView => Future.successful(uv)
-      case Success(v) if v.isInstanceOf[UpdateView] => Future.successful(v.asInstanceOf[UpdateView])
-      case Failure(t) => Future.failed(t)
-      case m => Future.failed(new IllegalStateException(s"unknown message: $m"))
+      case uv: UpdateView =>
+        Future.successful(uv)
+
+      case Success(v) if v.isInstanceOf[UpdateView] =>
+        Future.successful(v.asInstanceOf[UpdateView])
+
+      case Failure(t) =>
+        logger.warn(s"Failed to update view $userId" ,t)
+        Future.failed(t)
+
+      case m =>
+        logger.warn(s"Unknown message $userId")
+        Future.failed(new IllegalStateException(s"unknown message: $m"))
     }
     res
   }

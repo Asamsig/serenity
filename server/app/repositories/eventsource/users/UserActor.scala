@@ -9,10 +9,10 @@ import models._
 import models.user.Auths.{BasicAuth, HospesAuth, SerenityAuth}
 import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
 import models.user.{Email, User, UserId}
-import repositories.view.UserRepository
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
+import repositories.view.UserRepository
 
 import scala.util.control.NonFatal
 
@@ -98,9 +98,16 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
       user match {
         case Some(usr) =>
           val replyTo = sender()
-          userRepository.saveUser(usr).map(_ => replyTo ! qry).recover {
-            case NonFatal(t) => replyTo ! Failure(t)
-          }
+          userRepository.saveUser(usr)
+              .map { _ =>
+                log.debug(s"Migration done for ${usr.userId}")
+                replyTo ! qry
+              }
+              .recover {
+                case NonFatal(t) =>
+                  log.error(t, s"Failed to save user ${usr.userId}")
+                  replyTo ! Failure(t)
+              }
         case None => Failure(new IllegalStateException(s"User not found with id $uid"))
       }
 
