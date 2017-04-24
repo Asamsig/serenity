@@ -2,7 +2,7 @@ package repositories.view
 
 import javax.inject.{Inject, Singleton}
 
-import models.time
+import models.{UserId, time}
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.domain

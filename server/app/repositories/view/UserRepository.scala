@@ -1,5 +1,6 @@
 package repositories.view
 
+import models.UserId
 import repositories.eventsource.users.domain.{BasicAuth, User}
 
 import scala.concurrent.Future

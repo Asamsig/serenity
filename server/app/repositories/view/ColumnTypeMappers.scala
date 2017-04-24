@@ -4,7 +4,7 @@ import java.sql.{Timestamp => JSqlTimestamp}
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
-import models.time
+import models.{UserId, time}
 import play.api.db.slick.HasDatabaseConfig
 import repositories.eventsource.users.domain.{DateTime, MembershipIssuer, Role}
 import slick.jdbc.JdbcProfile

@@ -6,7 +6,7 @@ import akka.actor.Status.{Failure, Success}
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.PersistentActor
 import models._
-import repositories.view.{UserRepository, UserId => UId}
+import repositories.view.UserRepository
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
@@ -146,7 +146,7 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
         u <- user
         c <- credentials
 
-      } yield userRepository.saveCredentials(new UId(u.uuid), c)
+      } yield userRepository.saveCredentials(new UserId(u.uuid), c)
 
   }
 

@@ -2,7 +2,7 @@ package repositories.view
 
 import java.util.UUID
 
-import models.time
+import models.{UserId, time}
 import org.scalatest.Inside
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec

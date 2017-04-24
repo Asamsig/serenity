@@ -1,4 +1,4 @@
-package repositories.view
+package models
 
 import java.util.UUID
 

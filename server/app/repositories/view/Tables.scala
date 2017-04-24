@@ -2,6 +2,7 @@ package repositories.view
 
 import java.time.{LocalDate, LocalDateTime}
 
+import models.UserId
 import play.api.db.slick.HasDatabaseConfigProvider
 import repositories.eventsource.users.domain.{MembershipIssuer, Role}
 import slick.jdbc.JdbcProfile
