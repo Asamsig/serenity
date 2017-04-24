@@ -1,7 +1,8 @@
 package repositories.eventsource.users
 
-import models.{Query, UserId}
-import repositories.eventsource.users.domain.{BasicAuth, User}
+import models.Query
+import models.user.Auths.BasicAuth
+import models.user.{User, UserId}
 
 object UserReadProtocol {
 

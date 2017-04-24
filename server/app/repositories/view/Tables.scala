@@ -2,9 +2,10 @@ package repositories.view
 
 import java.time.{LocalDate, LocalDateTime}
 
-import models.UserId
+import models.user.Memberships.MembershipIssuer
+import models.user.Roles.Role
+import models.user.UserId
 import play.api.db.slick.HasDatabaseConfigProvider
-import repositories.eventsource.users.domain.{MembershipIssuer, Role}
 import slick.jdbc.JdbcProfile
 
 trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappers {

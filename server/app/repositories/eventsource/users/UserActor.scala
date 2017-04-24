@@ -6,11 +6,13 @@ import akka.actor.Status.{Failure, Success}
 import akka.actor.{ActorLogging, Props}
 import akka.persistence.PersistentActor
 import models._
+import models.user.Auths.{BasicAuth, HospesAuth, SerenityAuth}
+import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
+import models.user.{Email, User, UserId}
 import repositories.view.UserRepository
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
-import repositories.eventsource.users.domain._
 
 import scala.util.control.NonFatal
 

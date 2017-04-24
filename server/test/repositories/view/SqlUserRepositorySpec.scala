@@ -2,12 +2,15 @@ package repositories.view
 
 import java.util.UUID
 
-import models.{UserId, time}
+import models.time
+import models.user.Auths.HospesAuth
+import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
+import models.user.Roles.AdminRole
+import models.user.{Email, User, UserId}
 import org.scalatest.Inside
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
-import repositories.eventsource.users.domain._
 
 class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures with Inside {
 
@@ -84,7 +87,7 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
       repo.saveUser(usr).futureValue
       val res = repo.findUserIdByEmail(usr.mainEmail.address).futureValue
 
-      res.map(_.underling) mustBe Some(usr.userId)
+      res mustBe Some(usr.userId)
     }
 
     def matchUser(actual: User, expected: User) = {
@@ -100,4 +103,5 @@ class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with Scala
       actual.emails must contain theSameElementsAs expected.emails
     }
   }
+
 }

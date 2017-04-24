@@ -3,7 +3,8 @@ package repositories.eventsource.users
 import akka.actor.{ActorLogging, ActorRef, Props, Stash}
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery2, EventsByTagQuery2}
 import akka.persistence.query.{EventEnvelope2, PersistenceQuery}
-import models.{Cmd, UserId}
+import models.Cmd
+import models.user.UserId
 import repositories.eventsource.QueryStream.LiveEvents
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol._

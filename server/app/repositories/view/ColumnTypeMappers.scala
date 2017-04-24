@@ -4,9 +4,11 @@ import java.sql.{Timestamp => JSqlTimestamp}
 import java.time.{LocalDate, LocalDateTime, ZoneOffset}
 import java.util.UUID
 
-import models.{UserId, time}
+import models.time
+import models.user.Memberships.MembershipIssuer
+import models.user.Roles.Role
+import models.user.UserId
 import play.api.db.slick.HasDatabaseConfig
-import repositories.eventsource.users.domain.{DateTime, MembershipIssuer, Role}
 import slick.jdbc.JdbcProfile
 
 trait ColumnTypeMappers { self: HasDatabaseConfig[JdbcProfile] =>
@@ -25,7 +27,7 @@ trait ColumnTypeMappers { self: HasDatabaseConfig[JdbcProfile] =>
     )
 
   implicit val datetimeMapper: BaseColumnType[LocalDateTime] =
-    MappedColumnType.base[DateTime, JSqlTimestamp](
+    MappedColumnType.base[LocalDateTime, JSqlTimestamp](
       dt => new JSqlTimestamp(dt.toInstant(ZoneOffset.UTC).toEpochMilli),
       ts => time.instanceToUtcLocalDateTime(ts.toInstant)
     )

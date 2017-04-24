@@ -5,11 +5,12 @@ import javax.inject.{Inject, Named}
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
+import models.user.Auths.BasicAuth
+import models.user.User
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.UpdateCredentialsCmd
-import repositories.eventsource.users.domain.{BasicAuth, User}
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble

@@ -2,11 +2,13 @@ package repositories.view
 
 import javax.inject.{Inject, Singleton}
 
-import models.{UserId, time}
+import models.time
+import models.user.Auths.{BasicAuth, HospesAuth, SerenityAuth}
+import models.user.Memberships.{EventbriteMeta, Membership}
+import models.user.Roles.Role
+import models.user.{Email, User, UserId}
 import play.api.db.slick.DatabaseConfigProvider
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import repositories.eventsource.users.domain
-import repositories.eventsource.users.domain._
 
 import scala.concurrent.Future
 

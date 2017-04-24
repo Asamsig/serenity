@@ -6,10 +6,10 @@ import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 import models.hospes.{MembershipJson, PersonJson}
+import models.user.Email
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesMembership, HospesUser}
-import repositories.eventsource.users.domain.Email
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}

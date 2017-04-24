@@ -5,8 +5,8 @@ import javax.inject.Inject
 import auth.AdminUser
 import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.services.IdentityService
+import models.user.User
 import play.api.Logger
-import repositories.eventsource.users.domain.User
 
 import scala.concurrent.Future
 

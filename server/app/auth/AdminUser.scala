@@ -3,9 +3,10 @@ package auth
 import javax.inject.{Inject, Named}
 
 import com.mohiva.play.silhouette.api.util.{PasswordHasher, PasswordInfo}
-import models.{UserId, time}
+import models.time
+import models.user.Roles.AdminRole
+import models.user.{Email, User, UserId}
 import play.api.Configuration
-import repositories.eventsource.users.domain.{AdminRole, Email, User}
 
 class AdminUser @Inject()(@Named("bcryptHasher") hasher: PasswordHasher, configuration: Configuration) {
 

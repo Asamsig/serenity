@@ -6,11 +6,11 @@ import akka.persistence.query.{EventEnvelope2, Sequence}
 import akka.testkit.TestProbe
 import helpers.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import models._
+import models.user.{Email, UserId}
 import org.scalamock.scalatest.MockFactory
 import repositories.eventsource.users.UserManagerActorFixtures.beerDuke
 import repositories.eventsource.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
 import repositories.eventsource.users.UserWriteProtocol._
-import repositories.eventsource.users.domain.Email
 import repositories.view.UserRepository
 
 import scala.util.Failure

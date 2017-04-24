@@ -3,11 +3,10 @@ package repositories.eventsource.users
 import akka.actor.ActorRef
 import akka.actor.Status.{Failure, Success}
 import helpers.akka.{AkkaConfig, AkkaSuite}
-import models.UserId
+import models.user.{Email, UserId}
 import org.scalamock.scalatest.MockFactory
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesUser, ValidationFailed}
-import repositories.eventsource.users.domain.Email
 import repositories.view.UserRepository
 
 class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersistence()) with MockFactory{

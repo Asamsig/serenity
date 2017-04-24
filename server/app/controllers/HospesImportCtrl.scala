@@ -7,13 +7,13 @@ import auth.{DefaultEnv, WithRole}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
 import models.hospes.{MembershipJson, PersonJson}
+import models.user.Roles.AdminRole
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import play.api.mvc.BodyParsers.parse
 import play.api.mvc.{Result, Results}
 import play.api.routing.Router
 import play.api.routing.sird._
-import repositories.eventsource.users.domain.AdminRole
 import services.HospesImportService
 
 import scala.concurrent.Future

@@ -5,7 +5,9 @@ import java.util.UUID
 
 import com.google.protobuf.Message
 import com.google.protobuf.timestamp.Timestamp
-import models.{EventMeta, UserId}
+import models.EventMeta
+import models.user.Memberships.{EventbriteMeta, MembershipIssuer}
+import models.user.{Email, UserId}
 import repositories.eventsource.protobuf.ProtobufFormat
 import serenity.protobuf.Userevents
 import serenity.protobuf.Userevents.BasicAuthMessage.AuthSourceEnum
@@ -13,7 +15,6 @@ import serenity.protobuf.userevents.MembershipUpdateMessage.{ActionEnum, Eventbr
 import serenity.protobuf.userevents._
 import serenity.protobuf.uuid.{UUID => PUUID}
 import users.UserWriteProtocol._
-import users.domain.{Email, EventbriteMeta, MembershipIssuer}
 
 import scala.language.implicitConversions
 

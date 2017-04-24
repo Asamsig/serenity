@@ -2,8 +2,9 @@ package auth
 
 import com.mohiva.play.silhouette.api.Authorization
 import com.mohiva.play.silhouette.impl.authenticators.JWTAuthenticator
+import models.user.Roles.Role
+import models.user.User
 import play.api.mvc.Request
-import repositories.eventsource.users.domain.{Role, User}
 
 import scala.concurrent.Future
 
