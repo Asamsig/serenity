@@ -54,6 +54,8 @@ class NoOpRepo extends UserRepository {
 
   override def findUserIdByEmail(email: String) = ???
 
+  override def findUsersIdByEmail(email: Seq[String]) = ???
+
   override def credentialsByEmail(email: String) = ???
 
   override def countUsers() = ???

@@ -17,5 +17,7 @@ trait UserRepository {
 
   def findUserIdByEmail(email: String): Future[Option[UserId]]
 
+  def findUsersIdByEmail(email: Seq[String]): Future[Seq[UserId]]
+
   def credentialsByEmail(email: String): Future[Option[BasicAuth]]
 }

@@ -1,196 +1,194 @@
 package repositories.eventsource.users
 
-import akka.actor.{ActorRef, Props}
-import akka.persistence.PersistentActor
-import akka.persistence.query.{EventEnvelope2, Sequence}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.testkit.TestProbe
-import helpers.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
+import helpers.akka.AkkaSuite
 import models._
-import models.user.{Email, UserId}
+import models.user.Auths.{BasicAuth, SerenityAuth}
+import models.user.{Auths, Email, User, UserId}
 import org.scalamock.scalatest.MockFactory
-import repositories.eventsource.users.UserManagerActorFixtures.beerDuke
-import repositories.eventsource.users.UserReadProtocol.{CredentialsNotFound, GetUser, GetUserCredentials, GetUserWithEmail}
+import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol._
 import repositories.view.UserRepository
 
+import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
 import scala.util.Failure
 
-class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec", AkkaConfig.inMemoryPersistence())
-    with InMemoryCleanup with MockFactory{
+class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFactory {
+  private val user = User(UserId.generate(), Email("beerduke@java.no", true), Seq(), createdDate = time.dateTimeNow())
+  private val emailExist = user.mainEmail
+  private val emailMissing = Email("does-not-exist@java.no", false)
 
-  val repo = stub[UserRepository]
+  private val cred = SerenityAuth("pwd")
+  private val repo = new TestUserRepository(Set(user), Map(user.userId -> cred))
 
   class DefaultTestSetup {
     val probe: TestProbe = new TestProbe(system)
     val props: (UserRepository, UserId) => Props = (_: UserRepository, id: UserId) => {
       val ref: ActorRef = probe.ref
-      Props(classOf[UsrActor], id, ref)
+      Props(classOf[ForwardActor], id, ref)
     }
-    val actor: ActorRef = system.actorOf(UserManagerActor(repo, props))
+    val userManager: ActorRef = system.actorOf(UserManagerActor(repo, props))
   }
 
   def defaultSetup() = new DefaultTestSetup
 
-  describe("Command messages") {
-    describe("HospesImportCmd") {
-      it("should forward msg") {
+  describe("UserManager") {
+
+    describe("receive CreateOrUpdateUserCmd") {
+
+      it("forward it when user doesn't exist") {
+        val attendee = Attendee(Profile("", "", "", "example@java.no"),
+          mock[AttendeeMeta], EventbriteStore.javaBin)
+        val cmd = CreateOrUpdateUserCmd(attendee)
         val setup = defaultSetup()
-        val cmd = HospesImportCmd(beerDuke)
-
-        setup.actor ! cmd
-
+        setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
       }
 
-      it("should forward msg with unique email") {
+      it("forward it when user does exist") {
+        val attendee = Attendee(Profile("", "", "", user.mainEmail.address),
+          mock[AttendeeMeta], EventbriteStore.javaBin)
+        val cmd = CreateOrUpdateUserCmd(attendee)
         val setup = defaultSetup()
-        val cmd = HospesImportCmd(beerDuke)
-        val cmd2 = HospesImportCmd(beerDuke.copy(email = List(Email("not_beerduke@java.no", validated = true))))
-
-        setup.actor ! cmd
-        setup.actor ! cmd2
-
-        setup.probe.expectMsgAllOf(cmd, cmd2)
-      }
-
-      it("should reject 2nd msg with same email") {
-        val setup = defaultSetup()
-        val cmd = HospesImportCmd(beerDuke)
-
-        setup.actor ! cmd
-        setup.actor ! cmd
-
-        expectMsgClass(classOf[Failure[ValidationFailed]])
-      }
-    }
-
-    describe("CreateOrUpdateUserCmd") {
-      val cmd = CreateOrUpdateUserCmd(
-        Attendee(
-          Profile("ta", "da", "123","tada@java.no"),
-          AttendeeMeta("1", "2", "3", time.dateTimeNow(), false, false),
-          EventbriteStore.javaBin))
-
-      it("should forward msg") {
-        val setup = defaultSetup()
-
-        setup.actor ! cmd
-
-        setup.probe.expectMsg(cmd)
-      }
-
-      it("should forward msg with unique email") {
-        val setup = defaultSetup()
-        val cmd2: CreateOrUpdateUserCmd = cmd.copy(
-          attendee = cmd.attendee.copy(
-            profile = cmd.attendee.profile.copy(email = "heh@java.no")))
-
-        setup.actor ! cmd
-        setup.actor ! cmd2
-
-        setup.probe.expectMsgAllOf(cmd, cmd2)
-      }
-
-      it("should forward 2nd with same email ") {
-        val setup = defaultSetup()
-
-        setup.actor ! cmd
-        setup.actor ! cmd
-
+        setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
       }
     }
-  }
 
-  describe("Query messages") {
-    def withEnvelope(cmd: HospesImportCmd): EventEnvelope2 = {
-      EventEnvelope2(
-        Sequence(1), "", 2,
-        UserWriteProtocol.toHospesUserEvent(UserId.generate(), cmd.user))
-    }
-
-    describe("GetUserWithEmail") {
-      it("should respond with failure if user doesn't exists") {
+    describe("receive HospesImportCmd") {
+      it("forward it when user doesn't exist") {
+        val cmd = HospesImportCmd(HospesUser(
+          List(), List(emailMissing), None, None, None, None, "pwd", "salt", Set()
+        ))
         val setup = defaultSetup()
-
-        setup.actor ! GetUserWithEmail("doesnt.exist@java.no")
-
-        expectMsgClass(classOf[Failure[String]])
-      }
-
-      it("should forward message if user exists") {
-        val setup = defaultSetup()
-        val query: GetUserWithEmail = GetUserWithEmail(beerDuke.email.head.address)
-
-        val cmd: HospesImportCmd = HospesImportCmd(beerDuke)
-        setup.actor ! cmd
+        setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
-
-        setup.actor ! query
-        setup.probe.expectMsgClass(classOf[GetUser])
       }
 
+      it("decline it when user does exist") {
+        val cmd = HospesImportCmd(HospesUser(
+          List(), List(emailExist), None, None, None, None, "pwd", "salt", Set()
+        ))
+        val setup = defaultSetup()
+        setup.userManager ! cmd
+
+        setup.probe.expectNoMsg(100 millis)
+        expectMsg(Failure(ValidationFailed("User exist")))
+      }
     }
 
-    describe("GetUserCredentials") {
-      it("should respond with CredentialsNotFound if user doesn't exists") {
+    describe("receive UpdateCredentialsCmd") {
+      it("forward it when user does exist") {
+        val cmd = UpdateCredentialsCmd(emailExist.address, "hash")
         val setup = defaultSetup()
+        setup.userManager ! cmd
+        setup.probe.expectMsg(cmd)
+      }
 
-        setup.actor ! GetUserCredentials("doesnt.exist@java.no")
+      it("decline it when user doesn't exist") {
+        val cmd = UpdateCredentialsCmd(emailMissing.address, "hash")
+        val setup = defaultSetup()
+        setup.userManager ! cmd
 
+        setup.probe.expectNoMsg(100 millis)
+        expectMsg(Failure(ValidationFailed("User does not exist")))
+      }
+    }
+
+    describe("receive GetUserWithEmail query") {
+      it("forward it when user does exist") {
+        val query = GetUserWithEmail(emailExist.address)
+        val setup = defaultSetup()
+        setup.userManager ! query
+
+        setup.probe.expectMsg(GetUser(user.userId))
+      }
+
+      it("decline it when user doesn't exist") {
+        val query = GetUserWithEmail(emailMissing.address)
+        val setup = defaultSetup()
+        setup.userManager ! query
+
+        setup.probe.expectNoMsg(100 millis)
+        expectMsg(Failure(ValidationFailed("User with email doesn't exist")))
+      }
+    }
+
+    describe("receive GetUserCredentials query") {
+      it("forward it when user does exist") {
+        val query = GetUserCredentials(emailExist.address)
+        val setup = defaultSetup()
+        setup.userManager ! query
+
+        setup.probe.expectMsg(query)
+      }
+
+      it("decline it when user doesn't exist") {
+        val query = GetUserCredentials(emailMissing.address)
+        val setup = defaultSetup()
+        setup.userManager ! query
+
+        setup.probe.expectNoMsg(100 millis)
         expectMsg(CredentialsNotFound)
       }
+    }
 
-      it("should forward message if user exists ") {
+    describe("receive UpdateView query") {
+      it("forward it") {
+        val query = UpdateView(user.userId)
         val setup = defaultSetup()
-        val query: GetUserCredentials = GetUserCredentials(beerDuke.email.head.address)
+        setup.userManager ! query
 
-        val cmd: HospesImportCmd = HospesImportCmd(beerDuke)
-        setup.actor ! cmd
-        setup.probe.expectMsg(cmd)
-
-        setup.actor ! query
-        setup.probe.expectMsgClass(classOf[GetUserCredentials])
+        setup.probe.expectMsg(query)
       }
     }
   }
 }
 
-class UsrActor(id: UserId, probeRef: ActorRef) extends PersistentActor {
-  override def persistenceId: String = "UserManagerActorSpec"
+class ForwardActor(id: UserId, probeRef: ActorRef) extends Actor {
 
-  override def receiveRecover: Receive = {
-    case m => unhandled(m)
-  }
-
-  override def receiveCommand: Receive = {
-    case m: HospesImportCmd =>
-      persist(toHospesUserEvent(id, m.user)) {
-        evt =>
-          probeRef.forward(m)
-      }
-    case m: CreateOrUpdateUserCmd =>
-      val p = m.attendee.profile
-      persist(UserUpdatedEvt(id, p.email, p.firstName, p.lastName, p.phone, EventMeta())) {
-        evt => probeRef.forward(m)
-      }
+  override def receive: Receive = {
     case m => probeRef.forward(m)
   }
 }
 
-object UserManagerActorFixtures {
-  val beerDuke: HospesUser = {
-    HospesUser(
-      originId = List(42),
-      email = List(Email("beerduke@java.no", validated = true)),
-      firstname = Some("beer"),
-      lastname = Some("duke"),
-      address = None,
-      phonenumber = None,
-      password_pw = "gimme",
-      password_slt = "beeeer!",
-      memberships = Set(HospesMembership(49, 2016))
-    )
+
+class TestUserRepository(
+    var users: Set[User] = Set.empty,
+    var credentials: Map[UserId, BasicAuth] = Map.empty
+) extends UserRepository {
+
+  override def saveUser(u: User) = {
+    users = users + u
+    Future.successful(())
   }
+
+  override def saveCredentials(id: UserId, auth: Auths.BasicAuth) = {
+    credentials = credentials + (id -> auth)
+    Future.successful(())
+  }
+
+  override def countUsers() =
+    Future.successful(users.size)
+
+  override def fetchUserById(userId: UserId) =
+    Future.successful(users.find(_.userId == userId))
+
+  override def findUserIdByEmail(email: String) =
+    Future.successful(users.find(_.allEmail.exists(_.address == email)).map(_.userId))
+
+  override def findUsersIdByEmail(email: Seq[String]) =
+    Future.successful(
+      users.filter(_.allEmail.exists(e => email.contains(e.address)))
+          .map(_.userId)
+          .toSeq)
+
+  override def credentialsByEmail(email: String) =
+    Future.successful(
+      users.find(_.allEmail.exists(_.address == email))
+          .map(_.userId)
+          .flatMap(u => credentials.get(u)))
 
 }

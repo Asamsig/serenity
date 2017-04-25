@@ -92,7 +92,7 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
       row
     })
 
-  def saveUser(u: User): Future[Unit] = {
+  override def saveUser(u: User): Future[Unit] = {
     val insertUserData = for {
       _ <- insertUserAction(u.userId, u)
       _ <- insertEmailsAction(u.userId, u.allEmail)
@@ -103,7 +103,7 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
     res
   }
 
-  def saveCredentials(id: UserId, auth: BasicAuth): Future[Unit] = {
+  override def saveCredentials(id: UserId, auth: BasicAuth): Future[Unit] = {
     val value: UserCredentialsRow = auth match {
       case HospesAuth(pwd, salt) => (id, 1, pwd, salt)
       case SerenityAuth(pwd) => (id, 2, pwd, None)
@@ -112,7 +112,7 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
     db.run(action).map(_ => ())
   }
 
-  def fetchUserById(userId: UserId): Future[Option[User]] = {
+  override def fetchUserById(userId: UserId): Future[Option[User]] = {
     val query = for {
       usr <- usersTable.filter(_.userId === userId).result.headOption
       emails <- userEmailsTable.filter(_.userId === userId).result
@@ -123,12 +123,17 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
     db.run(query)
   }
 
-  def findUserIdByEmail(email: String): Future[Option[UserId]] = {
+  override def findUserIdByEmail(email: String): Future[Option[UserId]] = {
     val query = userEmailsTable.filter(_.email === email).map(_.userId)
     db.run(query.result.headOption)
   }
 
-  def credentialsByEmail(email: String): Future[Option[BasicAuth]] = {
+  override def findUsersIdByEmail(emails: Seq[String]): Future[Seq[UserId]] = {
+    val query = userEmailsTable.filter(_.email.inSet(emails)).map(_.userId)
+    db.run(query.result)
+  }
+
+  override def credentialsByEmail(email: String): Future[Option[BasicAuth]] = {
     val query = for {
       (_, cred) <- userEmailsTable.filter(_.email === email).join(userCredentialsTable).on(_.userId === _.userId)
     } yield cred

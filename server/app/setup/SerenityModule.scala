@@ -40,5 +40,5 @@ class SerenityModule(environment: Environment, config: Configuration) extends Ab
 }
 
 class UserManagerActorProvider @Inject()(as: ActorSystem, repo: UserRepository) extends Provider[ActorRef] {
-  override def get() = as.actorOf(UserManagerActor(repo))
+  override def get() = as.actorOf(UserManagerActor(repo), "user-manager")
 }

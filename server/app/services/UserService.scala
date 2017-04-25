@@ -38,6 +38,7 @@ class UserService @Inject()(@Named("UserManagerActor") userManagerActor: ActorRe
     }
 
   def findAuth(email: String): Future[Option[BasicAuth]] = {
+    logger.info(s"requesting cred for user $email ")
     (userManagerActor ? GetUserCredentials(email)).map {
       case UserCredentialsResponse(auth) =>
         logger.debug(s"Found credentials for user with email $email")
