@@ -14,6 +14,7 @@ import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
 import repositories.view.UserRepository
 
+import scala.concurrent.Future
 import scala.util.control.NonFatal
 
 class UserActor(id: UserId, userRepository: UserRepository) extends PersistentActor with ActorLogging {
@@ -99,6 +100,10 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
         case Some(usr) =>
           val replyTo = sender()
           userRepository.saveUser(usr)
+              .flatMap { _ =>
+                credentials.map(userRepository.saveCredentials(usr.userId, _))
+                    .getOrElse(Future.successful(()))
+              }
               .map { _ =>
                 log.debug(s"Migration done for ${usr.userId}")
                 replyTo ! qry
