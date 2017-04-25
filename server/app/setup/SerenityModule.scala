@@ -13,6 +13,7 @@ import play.api.libs.concurrent.AkkaGuiceSupport
 import play.api.{Configuration, Environment}
 import repositories.eventsource.users.UserManagerActor
 import repositories.view.{SqlUserRepository, UserRepository}
+import services.UpdateViewStarter
 import services.eventbrite.EventbriteTokens
 
 class SerenityModule(environment: Environment, config: Configuration) extends AbstractModule with AkkaGuiceSupport with ScalaModule {
@@ -32,6 +33,8 @@ class SerenityModule(environment: Environment, config: Configuration) extends Ab
     bind[EventbriteTokens].toInstance(config.underlying.as[EventbriteTokens]("serenity.eventbrite.token"))
 
     bind[ActorRef].annotatedWithName("UserManagerActor").toProvider(classOf[UserManagerActorProvider]).asEagerSingleton()
+
+    bind[UpdateViewStarter].asEagerSingleton()
   }
 
 }

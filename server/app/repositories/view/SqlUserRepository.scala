@@ -142,4 +142,8 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider) 
       }
     )
   }
+
+  override def countUsers() =
+    db.run(usersTable.length.result)
+
 }

@@ -11,6 +11,8 @@ trait UserRepository {
 
   def saveCredentials(id: UserId, auth: BasicAuth): Future[Unit]
 
+  def countUsers(): Future[Int]
+
   def fetchUserById(userId: UserId): Future[Option[User]]
 
   def findUserIdByEmail(email: String): Future[Option[UserId]]
