@@ -3,11 +3,11 @@ import play.sbt.PlayImport
 import sbt.{Resolver, _}
 
 object Versions {
-  val akka = "2.4.11"
+  val akka = "2.4.17"
   val silhouette = "4.0.0"
   val scalaVersion = "2.11.8"
   val protoBuf = "3.1.0"
-  val playSlick = "2.0.2"
+  val playSlick = "2.1.0"
   val postgresql = "9.4.1212"
 }
 
@@ -27,16 +27,17 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-persistence-query-experimental" % Versions.akka,
     "com.typesafe.akka" %% "akka-remote" % Versions.akka,
     "org.iq80.leveldb" % "leveldb" % "0.7",
-    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.6.12",
+    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.17.1",
     "org.postgresql" % "postgresql" % Versions.postgresql,
     "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
     "com.google.protobuf" % "protobuf-java" % Versions.protoBuf
   )
 
   private val test = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play" % "1.5.1" % "test",
-    "com.typesafe.akka"      %% "akka-testkit" % Versions.akka % "test",
-    "com.github.dnvriend"    %% "akka-persistence-inmemory" % "1.3.18" % "test"
+    "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test,
+    "com.typesafe.akka"      %% "akka-testkit" % Versions.akka % Test,
+    "com.github.dnvriend"    %% "akka-persistence-inmemory" % "1.3.18" % Test,
+    "org.scalamock"          %% "scalamock-scalatest-support" % "3.5.0" % Test
   )
 
   private val silhouette = Seq(
@@ -56,9 +57,9 @@ object Dependencies {
     PlayImport.evolutions
   )
 
-  val playDependencies = akka ++ test ++ silhouette ++ root
+  val playDependencies = akka ++ persistence ++ test ++ silhouette ++ root
 
-  val logicDependencies = akka ++ persistence ++ test ++ silhouette ++ Seq(
-    "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf",
-    PlayImport.ws)
+  val protobufDependencies = Seq(
+    "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf"
+    )
 }

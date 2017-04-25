@@ -2,7 +2,7 @@ package setup
 
 import javax.inject.Inject
 
-import controller.helpers.RouterCtrl
+import controllers.helpers.RouterCtrl
 import play.api.routing.{Router, SimpleRouter}
 
 class AppRoutes @Inject()(controllers: Set[RouterCtrl]) extends SimpleRouter {

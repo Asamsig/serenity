@@ -7,9 +7,9 @@ import com.mohiva.play.silhouette.api.LoginInfo
 import com.mohiva.play.silhouette.api.util.{PasswordHasher, PasswordInfo}
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
+import models.user.Auths.{HospesAuth, SerenityAuth}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import serenity.users.UserService
-import serenity.users.domain.{HospesAuth, SerenityAuth}
+import services.UserService
 
 import scala.concurrent.Future
 
