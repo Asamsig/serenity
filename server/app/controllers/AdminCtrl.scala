@@ -9,7 +9,8 @@ import models.user.Roles.AdminRole
 import models.user.UserId
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc.BodyParsers.parse
-import play.api.mvc.Results
+import play.api.mvc.{Action, Results}
+import play.api.routing.Router.Routes
 import play.api.routing.sird._
 import services.UpdateUserViewService
 
@@ -21,21 +22,22 @@ class AdminCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],
     updateUserViewService: UpdateUserViewService
 ) extends RouterCtrl {
-  override def withRoutes() = {
+  override def withRoutes(): Routes = {
     case PUT(p"/api/admin/updaeview/all") => updateViewAll()
     case PUT(p"/api/admin/updaeview/$id") => updateView(id)
   }
 
   import silhouette.SecuredAction
 
-  def updateViewAll() = SecuredAction(WithRole(AdminRole)).async(parse.empty) { _ =>
-    updateUserViewService.updateAll().map(_ => Results.Ok).recover {
-      case NonFatal(t) => Results.InternalServerError(t.getMessage)
+  def updateViewAll(): Action[Unit] =
+    SecuredAction(WithRole(AdminRole)).async(parse.empty) { _ =>
+      updateUserViewService.updateAll().map(_ => Results.Ok).recover {
+        case NonFatal(t) => Results.InternalServerError(t.getMessage)
+      }
     }
-  }
 
-  def updateView(id: String) = SecuredAction(WithRole(AdminRole)).async(parse.empty) {
-    _ =>
+  def updateView(id: String): Action[Unit] =
+    SecuredAction(WithRole(AdminRole)).async(parse.empty) { _ =>
       UserId
         .fromString(id)
         .map(uuid => {
@@ -44,6 +46,6 @@ class AdminCtrl @Inject()(
           }
         })
         .getOrElse(Future.successful(Results.BadRequest(s"Invalid input $id")))
-  }
+    }
 
 }

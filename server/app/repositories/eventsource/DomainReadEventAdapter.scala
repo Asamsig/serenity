@@ -15,6 +15,7 @@ class DomainReadEventAdapter extends ProtobufReadEventAdapter {
 
   import DomainProtobufFormats._
 
+  // scalastyle:off cyclomatic.complexity
   override def fromJournal(event: Any, manifest: String): EventSeq = event match {
     case proto: Message if manifest == classOf[UserUpdatedEvt].getSimpleName =>
       deserialize[UserUpdatedEvt](proto)
@@ -28,12 +29,15 @@ class DomainReadEventAdapter extends ProtobufReadEventAdapter {
       EventSeq.single(evt)
     case _ =>
       throw new IllegalStateException(
-        s"class [${event.getClass.getName}] with '$manifest' can't be deserialize by protobuf"
+        s"class [${event.getClass.getName}] with '$manifest' " +
+          "can't be deserialize by protobuf"
       )
   }
+  // scalastyle:on cyclomatic.complexity
 
   def fromMessage(message: Any): Any = {
-    fromJournal(message, message.getClass.getSimpleName.replace("Message", "Evt")).events.head
+    val manifest = message.getClass.getSimpleName.replace("Message", "Evt")
+    fromJournal(message, manifest).events.head
   }
 
 }

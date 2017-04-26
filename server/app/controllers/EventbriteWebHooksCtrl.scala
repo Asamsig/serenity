@@ -37,9 +37,9 @@ class EventbriteWebHooksCtrl @Inject()(
 
   def webHook(store: EventbriteStore.Store, secret: String) =
     UnsecuredAction.async(parse.json) { request =>
-      if (config.secret != secret)
+      if (config.secret != secret) {
         Future.successful(Results.Unauthorized("Unauthorized"))
-      else {
+      } else {
         val info = request.body.as[WebHookDetails]
         eventbriteService.handleWebHook(EventbriteWebHook(store, info)).map {
           case Success      => Results.Accepted(EmptyContent())

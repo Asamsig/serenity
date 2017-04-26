@@ -33,6 +33,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
     case msg: BasicAuthEvt        => updateCredentialModel(msg, isLive = false)
   }
 
+  // scalastyle:off cyclomatic.complexity method.length
   override def receiveCommand: Receive = {
 
     case cmd: HospesImportCmd if user.isDefined =>
@@ -86,18 +87,22 @@ class UserActor(id: UserId, userRepository: UserRepository)
       }
 
     case UpdateCredentialsCmd(email, hashedPassword) =>
-      if (user.isEmpty) sender() ! UserNotFound
-      else
+      if (user.isEmpty) {
+        sender() ! UserNotFound
+      } else {
         user.foreach(u => {
           persist(BasicAuthEvt(u.userId, hashedPassword)) { evt =>
             updateUserModel(evt)
             sender() ! UserCredentialsResponse(credentials.get)
           }
         })
-
+      }
     case GetUser(queriedId) =>
-      if (id != queriedId) sender() ! UserNotFound
-      else sender() ! user.map(UserResponse).getOrElse(UserNotFound)
+      if (id != queriedId) {
+        sender() ! UserNotFound
+      } else {
+        sender() ! user.map(UserResponse).getOrElse(UserNotFound)
+      }
 
     case GetUserCredentials(email) =>
       if (hasEmail(email)) {
@@ -109,7 +114,8 @@ class UserActor(id: UserId, userRepository: UserRepository)
           .getOrElse(CredentialsNotFound)
       } else {
         log.info(
-          s"Email $email not recognized for user ${user.map(_.userId)} ${user.map(_.allEmail)}"
+          s"Email $email not recognized for user " +
+            s"${user.map(_.userId)} ${user.map(_.allEmail)}"
         )
         sender() ! CredentialsNotFound
       }
@@ -141,6 +147,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
         new IllegalArgumentException(s"Unhandled message of type ${m.getClass}")
       )
   }
+  // scalastyle:on cyclomatic.complexity method.length
 
   private def toMembershipEvent(
       attendee: Attendee,
@@ -184,13 +191,13 @@ class UserActor(id: UserId, userRepository: UserRepository)
       case HospesAuthSource   => credentials = Some(HospesAuth(msg.password, msg.salt))
       case SerenityAuthSource => credentials = Some(SerenityAuth(msg.password))
     }
-    if (isLive)
+    if (isLive) {
       for {
         u <- user
         c <- credentials
 
       } yield userRepository.saveCredentials(u.userId, c)
-
+    }
   }
 
   private def updateUserModel(evt: Evt, isLive: Boolean = true) = {

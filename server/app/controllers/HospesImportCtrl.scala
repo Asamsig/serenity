@@ -6,7 +6,7 @@ import akka.util.Timeout
 import auth.{DefaultEnv, WithRole}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
-import models.hospes.{MembershipJson, PersonJson}
+import models.HospesDomain.{ImportHospesMembership, ImportHospesPerson}
 import models.user.Roles.AdminRole
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
@@ -41,8 +41,8 @@ class HospesImportCtrl @Inject()(
         case value: JsObject =>
           Future {
             (for {
-              p <- (value \ "persons").asOpt[List[PersonJson]]
-              m <- (value \ "memberships").asOpt[List[MembershipJson]]
+              p <- (value \ "persons").asOpt[List[ImportHospesPerson]]
+              m <- (value \ "memberships").asOpt[List[ImportHospesMembership]]
             } yield executeImport(p, m))
               .getOrElse(Results.BadRequest("Illegal input structure"))
           }.recover {
@@ -52,7 +52,10 @@ class HospesImportCtrl @Inject()(
       }
   }
 
-  def executeImport(pJson: List[PersonJson], mJson: List[MembershipJson]): Result = {
+  def executeImport(
+      pJson: List[ImportHospesPerson],
+      mJson: List[ImportHospesMembership]
+  ): Result = {
     val (sCount, fCount) = hospesImportService.executeImport(pJson, mJson)
     Results.Ok(s"Input: ${pJson.size}\nSuccesses: $sCount\nFailures: $fCount")
   }
@@ -71,6 +74,8 @@ trait HospesImportCtrlFormats {
 
     override def writes(o: BigInt): JsValue = JsString(o.toString)
   }
-  implicit val jsonPersonFormat: Format[PersonJson]         = Json.format[PersonJson]
-  implicit val jsonMembershipFormat: Format[MembershipJson] = Json.format[MembershipJson]
+  implicit val jsonPersonFormat: Format[ImportHospesPerson] =
+    Json.format[ImportHospesPerson]
+  implicit val jsonMembershipFormat: Format[ImportHospesMembership] =
+    Json.format[ImportHospesMembership]
 }

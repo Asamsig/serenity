@@ -12,4 +12,5 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.14")
 addSbtPlugin("kipsigman" % "sbt-elastic-beanstalk" % "0.1.4")
 
 // Formatting and style checking
-addSbtPlugin("com.geirsson" % "sbt-scalafmt" % "0.6.8")
+addSbtPlugin("com.geirsson"   % "sbt-scalafmt"           % "0.6.8")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")

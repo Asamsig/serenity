@@ -92,11 +92,14 @@ class LoginCtrl @Inject()(
     }).getOrElse(Future.successful(Ok))
   }
 
-  private def toCredentials(implicit request: Request[JsValue]): (Credentials, Boolean) = {
-    val json     = request.body
+  private def toCredentials(
+      implicit jsRequest: Request[JsValue]
+  ): (Credentials, Boolean) = {
+    val json     = jsRequest.body
     val usr      = (json \ "username").asOpt[String].getOrElse("")
     val pwd      = (json \ "password").asOpt[String].getOrElse("")
     val remember = (json \ "rememberMe").asOpt[Boolean].getOrElse(false)
     (Credentials(usr, pwd), remember)
   }
+
 }

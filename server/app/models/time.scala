@@ -2,7 +2,7 @@ package models
 
 import java.time._
 
-object time {
+package object time {
 
   def dateTimeNow(): LocalDateTime =
     LocalDateTime.now(Clock.systemUTC())

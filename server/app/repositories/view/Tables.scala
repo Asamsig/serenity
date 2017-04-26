@@ -37,6 +37,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
     val created   = column[LocalDateTime]("created")
     val updated   = column[LocalDateTime]("updated")
 
+    // scalastyle:off method.name
     override def * = (
       userId,
       firstName,
@@ -47,6 +48,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
       updated
     )
   }
+  // scalastyle:on method.name
 
   type UserEmailRow = (UserId, String, Boolean, Boolean)
 
@@ -57,6 +59,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
     val primaryEmail = column[Boolean]("primary_address")
     val validated    = column[Boolean]("validated")
 
+    // scalastyle:off method.name
     override def * = (
       userId,
       email,
@@ -64,6 +67,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
       validated
     )
   }
+  // scalastyle:on method.name
 
   type UserCredentialsRow = (UserId, Int, String, Option[String])
 
@@ -75,6 +79,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
     val password = column[String]("password")
     val salt     = column[Option[String]]("salt")
 
+    // scalastyle:off method.name
     override def * = (
       userId,
       typ,
@@ -82,6 +87,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
       salt
     )
   }
+  // scalastyle:on method.name
 
   type UserMembershipRow = (
       UserId,
@@ -104,6 +110,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
     val ebEventId    = column[Option[String]]("eb_event_id")
     val ebOrderId    = column[Option[String]]("eb_order_id")
 
+    // scalastyle:off method.name
     override def * = (
       userId,
       validFrom,
@@ -114,6 +121,7 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
       ebOrderId
     )
   }
+  // scalastyle:on method.name
 
   type UserRoleRow = (UserId, Role)
 
@@ -121,7 +129,9 @@ trait Tables extends HasDatabaseConfigProvider[JdbcProfile] with ColumnTypeMappe
     val userId = column[UserId]("user_id")
     val role   = column[Role]("role")
 
+    // scalastyle:off method.name
     override def * = (userId, role)
+    // scalastyle:on method.name
   }
 
 }

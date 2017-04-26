@@ -9,13 +9,14 @@ import com.mohiva.play.silhouette.api.util.{PasswordHasher, PasswordInfo}
 import scala.util.Random
 
 class HospesPasswordHasher extends PasswordHasher {
+  private val saltLength   = 16
   private lazy val encoder = Base64.getEncoder
   private lazy val digest  = MessageDigest.getInstance("SHA")
-
-  override def id: String = ID
+  override def id: String  = ID
 
   override def hash(plainPassword: String): PasswordInfo = {
-    val salt = Random.alphanumeric.take(16).mkString
+
+    val salt = Random.alphanumeric.take(saltLength).mkString
     val pwd  = sha(plainPassword, salt)
     PasswordInfo(ID, pwd, Some(salt))
   }

@@ -1,8 +1,8 @@
 package models
 
-object hospes {
+object HospesDomain {
 
-  case class PersonJson(
+  case class ImportHospesPerson(
       id: Int,
       email: String,
       firstname: Option[String],
@@ -19,7 +19,7 @@ object hospes {
       openidkey: Option[BigInt]
   )
 
-  case class MembershipJson(
+  case class ImportHospesMembership(
       id: Int,
       year: Int,
       boughtdate: String,

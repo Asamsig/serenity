@@ -40,8 +40,9 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider)
       memberships: Seq[UserMembershipRow]
   ): Option[User] = {
     val primaryEmail = email.find(_._3)
-    if (primaryEmail.isEmpty) None
-    else
+    if (primaryEmail.isEmpty) {
+      None
+    } else {
       usr.map(u => {
         User(
           userId = u._1,
@@ -56,6 +57,7 @@ class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider)
           memberships = memberships.map(toMembership).toSet
         )
       })
+    }
   }
 
   private def removeUserAction(uid: UserId) =
