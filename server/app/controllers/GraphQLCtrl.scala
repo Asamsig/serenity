@@ -11,21 +11,20 @@ import play.api.mvc.{Action, Controller}
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
 import sangria.ast.Document
-import sangria.execution.{ErrorWithResolver, Executor, QueryAnalysisError}
+import sangria.execution._
 import sangria.parser.{QueryParser, SyntaxError}
 import sangria.renderer.SchemaRenderer
-import services.UserService
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class GraphQLCtrl @Inject()(
-    silhouette: Silhouette[DefaultEnv],
-    userService: UserService
+    silhouette: Silhouette[DefaultEnv]
 )(implicit ec: ExecutionContext)
     extends RouterCtrl
     with Controller {
 
+  import sangria.marshalling.playJson._
   import silhouette.UserAwareAction
 
   override def withRoutes(): Routes = {
@@ -50,7 +49,7 @@ class GraphQLCtrl @Inject()(
       variables: Option[String]
   ) =
     UserAwareAction.async { request =>
-      parseAndExecure(
+      parseAndExecute(
         request.identity,
         query,
         operation,
@@ -63,25 +62,27 @@ class GraphQLCtrl @Inject()(
       val query     = (request.body \ "query").as[String]
       val operation = (request.body \ "operationName").asOpt[String]
       val variables = (request.body \ "variables").toOption.flatMap {
-        case JsString(vars) ⇒ Some(parseVariables(vars))
-        case obj: JsObject  ⇒ Some(obj)
-        case _              ⇒ None
+        case JsString(vars) => Some(parseVariables(vars))
+        case obj: JsObject  => Some(obj)
+        case _              => None
       }.getOrElse(Json.obj())
 
-      parseAndExecure(request.identity, query, operation, variables)
+      parseAndExecute(request.identity, query, operation, variables)
     }
 
-  private def parseAndExecure(
+  private def parseAndExecute(
       user: Option[User],
       query: String,
       operation: Option[String],
       variables: JsObject
   ) = {
     QueryParser.parse(query) match {
-      case Success(queryAst) ⇒
+      case Success(queryAst) =>
         executeGraphQLQuery(queryAst, variables, operation, user)
-      case Failure(error: SyntaxError) ⇒
-        Future.successful(BadRequest(Json.obj("error" → error.getMessage)))
+      case Failure(error: SyntaxError) =>
+        Future.successful(BadRequest(Json.obj("error" -> error.getMessage)))
+      case Failure(t) =>
+        Future.successful(InternalServerError(Json.obj("error" -> t.getMessage)))
     }
   }
 
@@ -107,9 +108,9 @@ class GraphQLCtrl @Inject()(
       variables = variables
     )
 
-    executor.map(Ok(_)).recover {
-      case error: QueryAnalysisError ⇒ BadRequest(error.resolveError)
-      case error: ErrorWithResolver  ⇒ InternalServerError(error.resolveError)
+    executor.map(v => Ok(v)).recover {
+      case error: QueryAnalysisError => BadRequest(error.resolveError)
+      case error: ErrorWithResolver  => InternalServerError(error.resolveError)
     }
   }
 

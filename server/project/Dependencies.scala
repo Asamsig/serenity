@@ -3,13 +3,14 @@ import play.sbt.PlayImport
 import sbt.{Resolver, _}
 
 object Versions {
-  val akka         = "2.4.17"
-  val silhouette   = "4.0.0"
-  val scalaVersion = "2.11.8"
-  val protoBuf     = "3.1.0"
-  val playSlick    = "2.1.0"
-  val postgresql   = "9.4.1212"
-  val sangria      = "1.0.0"
+  val akka            = "2.4.17"
+  val silhouette      = "4.0.0"
+  val scalaVersion    = "2.11.8"
+  val protoBuf        = "3.1.0"
+  val playSlick       = "2.1.0"
+  val postgresql      = "9.4.1212"
+  val sangria         = "1.1.0"
+  val sangriaPlayJson = "1.0.0"
 }
 
 object Dependencies {
@@ -36,7 +37,7 @@ object Dependencies {
 
   private val sangria = Seq(
     "org.sangria-graphql" %% "sangria"           % Versions.sangria,
-    "org.sangria-graphql" %% "sangria-play-json" % Versions.sangria
+    "org.sangria-graphql" %% "sangria-play-json" % Versions.sangriaPlayJson
   )
 
   private val test = Seq(
