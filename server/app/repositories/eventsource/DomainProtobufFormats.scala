@@ -71,7 +71,7 @@ object DomainProtobufFormats {
 
     override def write(e: BasicAuthEvt): Message = {
       BasicAuthMessage.toJavaProto(BasicAuthMessage(
-        e.id.underling,
+        e.id.underlying,
         e.password,
         e.salt,
         e.source match {
@@ -101,7 +101,7 @@ object DomainProtobufFormats {
 
     override def write(e: HospesUserImportEvt): Message =
       HospesUserImportMessage.toJavaProto(HospesUserImportMessage(
-        e.id.underling,
+        e.id.underlying,
         e.originId,
         e.email.map(em => EmailMessage(em.address, em.validated)),
         e.firstName,
@@ -128,7 +128,7 @@ object DomainProtobufFormats {
 
     override def write(e: UserUpdatedEvt): Message =
       UserUpdatedMessage.toJavaProto(UserUpdatedMessage(
-        e.id.underling,
+        e.id.underlying,
         Some(EmailMessage(e.email, validated = true)),
         e.firstName,
         e.lastName,

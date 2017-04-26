@@ -4,9 +4,9 @@ import java.util.UUID
 
 import scala.util.Try
 
-case class UserId(underling: UUID) {
+case class UserId(underlying: UUID) {
 
-  def asString = underling.toString
+  def asString = underlying.toString
 
 }
 

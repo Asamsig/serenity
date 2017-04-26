@@ -22,7 +22,7 @@ class UserActor(id: UserId, userRepository: UserRepository) extends PersistentAc
   private var user: Option[User] = None
   private var credentials: Option[BasicAuth] = None
 
-  override def persistenceId: String = s"user-${id.underling.toString}"
+  override def persistenceId: String = s"user-${id.underlying.toString}"
 
   override def receiveRecover: Receive = {
     case msg: UserUpdatedEvt => updateUserModel(msg, isLive = false)

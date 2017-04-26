@@ -48,7 +48,7 @@ class UpdateUserViewService @Inject()(
     }.grouped(500)
 
 
-    groupedUserIdsStream.flatMapConcat(s => Source(s.flatten)).runWith(sink)
+    groupedUserIdsStream.mapConcat(_.flatten.distinct).runWith(sink)
   }
 
   private def journal: CurrentEventsByTagQuery2 with EventsByTagQuery2 = {
