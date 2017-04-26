@@ -1,4 +1,4 @@
-package graphql
+package models.graphql
 
 import sangria.macros.derive
 import sangria.macros.derive.ExcludeFields

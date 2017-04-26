@@ -4,7 +4,7 @@ import auth.DefaultEnv
 import com.google.inject.Inject
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
-import graphql.{Context, SchemaDefinition}
+import models.graphql.{Context, SchemaDefinition}
 import models.user.User
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.{Action, Controller}
