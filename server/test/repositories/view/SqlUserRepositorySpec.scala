@@ -12,7 +12,11 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class SqlUserRepositorySpec extends PlaySpec with GuiceOneAppPerSuite with ScalaFutures with Inside {
+class SqlUserRepositorySpec
+    extends PlaySpec
+    with GuiceOneAppPerSuite
+    with ScalaFutures
+    with Inside {
 
   val repo = app.injector.instanceOf(classOf[SqlUserRepository])
 

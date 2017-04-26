@@ -30,7 +30,7 @@ case class AttendeeMeta(
 ) {
   lazy val status: Status = (cancelled, refunded) match {
     case (false, false) => Update
-    case _ => Delete
+    case _              => Delete
   }
 }
 
@@ -52,29 +52,29 @@ trait EventbriteApiDtoJson {
   import LocalDateTimeFormatImplicits.localDateTimeFormat
 
   implicit val attendeeAddressJsonReader: Reads[AttendeeAddress] = (
-      (JsPath \ "address_1").readNullable[String] and
-          (JsPath \ "address_2").readNullable[String] and
-          (JsPath \ "city").readNullable[String] and
-          (JsPath \ "region").readNullable[String] and
-          (JsPath \ "postal_code").readNullable[String] and
-          (JsPath \ "country").readNullable[String]
-      ) (AttendeeAddress.apply _)
+    (JsPath \ "address_1").readNullable[String] and
+      (JsPath \ "address_2").readNullable[String] and
+      (JsPath \ "city").readNullable[String] and
+      (JsPath \ "region").readNullable[String] and
+      (JsPath \ "postal_code").readNullable[String] and
+      (JsPath \ "country").readNullable[String]
+  )(AttendeeAddress.apply _)
 
   implicit val profileJsonReader: Reads[Profile] = (
-      (JsPath \ "first_name").read[String] and
-          (JsPath \ "last_name").read[String] and
-          (JsPath \ "cell_phone").read[String] and
-          (JsPath \ "email").read[String] and
-          (JsPath \ "addresses" \ "home").readNullable[AttendeeAddress]
-      ) (Profile.apply _)
+    (JsPath \ "first_name").read[String] and
+      (JsPath \ "last_name").read[String] and
+      (JsPath \ "cell_phone").read[String] and
+      (JsPath \ "email").read[String] and
+      (JsPath \ "addresses" \ "home").readNullable[AttendeeAddress]
+  )(Profile.apply _)
 
   implicit val attendeeMetaJsonReader: Reads[AttendeeMeta] = (
-      (JsPath \ "id").read[String] and
-          (JsPath \ "order_id").read[String] and
-          (JsPath \ "event_id").read[String] and
-          (JsPath \ "created").read[LocalDateTime] and
-          (JsPath \ "cancelled").read[Boolean] and
-          (JsPath \ "refunded").read[Boolean]
-      ) (AttendeeMeta.apply _)
+    (JsPath \ "id").read[String] and
+      (JsPath \ "order_id").read[String] and
+      (JsPath \ "event_id").read[String] and
+      (JsPath \ "created").read[LocalDateTime] and
+      (JsPath \ "cancelled").read[Boolean] and
+      (JsPath \ "refunded").read[Boolean]
+  )(AttendeeMeta.apply _)
 
 }

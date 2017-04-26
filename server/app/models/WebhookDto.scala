@@ -5,7 +5,7 @@ import play.api.libs.json.{JsPath, Reads}
 
 object EventbriteStore extends Enumeration {
   type Store = Value
-  val javaBin = Value("javabin")
+  val javaBin  = Value("javabin")
   val javaZone = Value("javazone")
 }
 
@@ -24,17 +24,17 @@ case class EventbriteWebHook(
 
 trait WebHookInfoJson {
   implicit val webHookInfoReader: Reads[WebHookDetails] = (
-      (JsPath \ "config" \ "action").read[String] and
-          (JsPath \ "config" \ "user_id").readNullable[String] and
-          (JsPath \ "config" \ "endpoint_url").read[String] and
-          (JsPath \ "config" \ "webhook_id").read[String] and
-          (JsPath \ "api_url").read[String]
-      ) (WebHookDetails.apply _)
+    (JsPath \ "config" \ "action").read[String] and
+      (JsPath \ "config" \ "user_id").readNullable[String] and
+      (JsPath \ "config" \ "endpoint_url").read[String] and
+      (JsPath \ "config" \ "webhook_id").read[String] and
+      (JsPath \ "api_url").read[String]
+  )(WebHookDetails.apply _)
 }
 
 object EventbriteHandleStatus extends Enumeration {
   type Status = Value
-  val Success = Value
-  val Failure = Value
+  val Success      = Value
+  val Failure      = Value
   val NotSupported = Value
 }

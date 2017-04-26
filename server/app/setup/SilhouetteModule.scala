@@ -7,10 +7,18 @@ import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncod
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.services.AuthenticatorService
 import com.mohiva.play.silhouette.api.util._
-import com.mohiva.play.silhouette.api.{Environment, EventBus, Silhouette, SilhouetteProvider}
+import com.mohiva.play.silhouette.api.{
+  Environment,
+  EventBus,
+  Silhouette,
+  SilhouetteProvider
+}
 import com.mohiva.play.silhouette.crypto.{JcaCrypter, JcaCrypterSettings}
 import com.mohiva.play.silhouette.impl.authenticators._
-import com.mohiva.play.silhouette.impl.util.{DefaultFingerprintGenerator, SecureRandomIDGenerator}
+import com.mohiva.play.silhouette.impl.util.{
+  DefaultFingerprintGenerator,
+  SecureRandomIDGenerator
+}
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
 import com.mohiva.play.silhouette.persistence.repositories.DelegableAuthInfoRepository
@@ -30,8 +38,12 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
     bind[Silhouette[DefaultEnv]].to[SilhouetteProvider[DefaultEnv]]
 
     bind[DelegableAuthInfoDAO[PasswordInfo]].to[PasswordAuth]
-    bind[PasswordHasher].annotatedWithName("bcryptHasher").toInstance(new BCryptPasswordHasher)
-    bind[PasswordHasher].annotatedWithName("hospesHasher").toInstance(new HospesPasswordHasher)
+    bind[PasswordHasher]
+      .annotatedWithName("bcryptHasher")
+      .toInstance(new BCryptPasswordHasher)
+    bind[PasswordHasher]
+      .annotatedWithName("hospesHasher")
+      .toInstance(new HospesPasswordHasher)
 
     bind[IDGenerator].toInstance(new SecureRandomIDGenerator())
     bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))
@@ -43,7 +55,8 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
   def provideEnvironment(
       userService: UserIdentityService,
       authenticatorService: AuthenticatorService[JWTAuthenticator],
-      eventBus: EventBus): Environment[DefaultEnv] = {
+      eventBus: EventBus
+  ): Environment[DefaultEnv] = {
 
     Environment[DefaultEnv](
       userService,
@@ -71,7 +84,8 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
   @Provides
   @Named("authenticator-crypter")
   def provideAuthenticatorCrypter(configuration: Configuration): Crypter = {
-    val config = configuration.underlying.as[JcaCrypterSettings]("silhouette.authenticator.crypter")
+    val config =
+      configuration.underlying.as[JcaCrypterSettings]("silhouette.authenticator.crypter")
     new JcaCrypter(config)
   }
 
@@ -84,16 +98,19 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
   ): AuthenticatorService[JWTAuthenticator] = {
 
     implicit val jwtAuthSettingsReader: ValueReader[JWTAuthenticatorSettings] =
-      ValueReader.relative(c =>
-        JWTAuthenticatorSettings(
-          fieldName = c.as[String]("headerName"),
-          issuerClaim = c.as[String]("issuerClaim"),
-          authenticatorExpiry = c.as[FiniteDuration]("authenticatorExpiry"),
-          authenticatorIdleTimeout = c.getAs[FiniteDuration]("authenticatorIdleTimeout"),
-          sharedSecret = c.as[String]("sharedSecret")
-        ))
-    val config = configuration.underlying
-        .as[JWTAuthenticatorSettings]("silhouette.authenticator")
+      ValueReader.relative(
+        c =>
+          JWTAuthenticatorSettings(
+            fieldName = c.as[String]("headerName"),
+            issuerClaim = c.as[String]("issuerClaim"),
+            authenticatorExpiry = c.as[FiniteDuration]("authenticatorExpiry"),
+            authenticatorIdleTimeout =
+              c.getAs[FiniteDuration]("authenticatorIdleTimeout"),
+            sharedSecret = c.as[String]("sharedSecret")
+        )
+      )
+    val config =
+      configuration.underlying.as[JWTAuthenticatorSettings]("silhouette.authenticator")
     val encoder = new CrypterAuthenticatorEncoder(crypter)
     new JWTAuthenticatorService(config, None, encoder, idGenerator, clock)
   }

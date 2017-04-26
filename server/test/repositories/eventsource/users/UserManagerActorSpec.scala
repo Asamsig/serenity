@@ -16,8 +16,13 @@ import scala.concurrent.duration.DurationDouble
 import scala.util.Failure
 
 class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFactory {
-  private val user = User(UserId.generate(), Email("beerduke@java.no", true), Seq(), createdDate = time.dateTimeNow())
-  private val emailExist = user.mainEmail
+  private val user = User(
+    UserId.generate(),
+    Email("beerduke@java.no", true),
+    Seq(),
+    createdDate = time.dateTimeNow()
+  )
+  private val emailExist   = user.mainEmail
   private val emailMissing = Email("does-not-exist@java.no", false)
 
   private val cred = SerenityAuth("pwd")
@@ -39,18 +44,24 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
     describe("receive CreateOrUpdateUserCmd") {
 
       it("forward it when user doesn't exist") {
-        val attendee = Attendee(Profile("", "", "", "example@java.no"),
-          mock[AttendeeMeta], EventbriteStore.javaBin)
-        val cmd = CreateOrUpdateUserCmd(attendee)
+        val attendee = Attendee(
+          Profile("", "", "", "example@java.no"),
+          mock[AttendeeMeta],
+          EventbriteStore.javaBin
+        )
+        val cmd   = CreateOrUpdateUserCmd(attendee)
         val setup = defaultSetup()
         setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
       }
 
       it("forward it when user does exist") {
-        val attendee = Attendee(Profile("", "", "", user.mainEmail.address),
-          mock[AttendeeMeta], EventbriteStore.javaBin)
-        val cmd = CreateOrUpdateUserCmd(attendee)
+        val attendee = Attendee(
+          Profile("", "", "", user.mainEmail.address),
+          mock[AttendeeMeta],
+          EventbriteStore.javaBin
+        )
+        val cmd   = CreateOrUpdateUserCmd(attendee)
         val setup = defaultSetup()
         setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
@@ -59,18 +70,38 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
 
     describe("receive HospesImportCmd") {
       it("forward it when user doesn't exist") {
-        val cmd = HospesImportCmd(HospesUser(
-          List(), List(emailMissing), None, None, None, None, "pwd", "salt", Set()
-        ))
+        val cmd = HospesImportCmd(
+          HospesUser(
+            List(),
+            List(emailMissing),
+            None,
+            None,
+            None,
+            None,
+            "pwd",
+            "salt",
+            Set()
+          )
+        )
         val setup = defaultSetup()
         setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
       }
 
       it("decline it when user does exist") {
-        val cmd = HospesImportCmd(HospesUser(
-          List(), List(emailExist), None, None, None, None, "pwd", "salt", Set()
-        ))
+        val cmd = HospesImportCmd(
+          HospesUser(
+            List(),
+            List(emailExist),
+            None,
+            None,
+            None,
+            None,
+            "pwd",
+            "salt",
+            Set()
+          )
+        )
         val setup = defaultSetup()
         setup.userManager ! cmd
 
@@ -81,14 +112,14 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
 
     describe("receive UpdateCredentialsCmd") {
       it("forward it when user does exist") {
-        val cmd = UpdateCredentialsCmd(emailExist.address, "hash")
+        val cmd   = UpdateCredentialsCmd(emailExist.address, "hash")
         val setup = defaultSetup()
         setup.userManager ! cmd
         setup.probe.expectMsg(cmd)
       }
 
       it("decline it when user doesn't exist") {
-        val cmd = UpdateCredentialsCmd(emailMissing.address, "hash")
+        val cmd   = UpdateCredentialsCmd(emailMissing.address, "hash")
         val setup = defaultSetup()
         setup.userManager ! cmd
 
@@ -154,7 +185,6 @@ class ForwardActor(id: UserId, probeRef: ActorRef) extends Actor {
   }
 }
 
-
 class TestUserRepository(
     var users: Set[User] = Set.empty,
     var credentials: Map[UserId, BasicAuth] = Map.empty
@@ -181,14 +211,15 @@ class TestUserRepository(
 
   override def findUsersIdByEmail(email: Seq[String]) =
     Future.successful(
-      users.filter(_.allEmail.exists(e => email.contains(e.address)))
-          .map(_.userId)
-          .toSeq)
+      users.filter(_.allEmail.exists(e => email.contains(e.address))).map(_.userId).toSeq
+    )
 
   override def credentialsByEmail(email: String) =
     Future.successful(
-      users.find(_.allEmail.exists(_.address == email))
-          .map(_.userId)
-          .flatMap(u => credentials.get(u)))
+      users
+        .find(_.allEmail.exists(_.address == email))
+        .map(_.userId)
+        .flatMap(u => credentials.get(u))
+    )
 
 }

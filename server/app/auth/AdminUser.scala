@@ -8,7 +8,10 @@ import models.user.Roles.AdminRole
 import models.user.{Email, User, UserId}
 import play.api.Configuration
 
-class AdminUser @Inject()(@Named("bcryptHasher") hasher: PasswordHasher, configuration: Configuration) {
+class AdminUser @Inject()(
+    @Named("bcryptHasher") hasher: PasswordHasher,
+    configuration: Configuration
+) {
 
   private val basePath = "serenity.adminuser"
 

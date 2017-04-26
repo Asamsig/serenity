@@ -17,29 +17,34 @@ import repositories.view.UserRepository
 import scala.concurrent.Future
 
 object UserEventExtractor extends App {
-  implicit val as = ActorSystem("UserExtractor")
+  implicit val as  = ActorSystem("UserExtractor")
   implicit val mat = ActorMaterializer()
-  val toMsg = new DomainReadEventAdapter
+  val toMsg        = new DomainReadEventAdapter
 
-  private def getJournal(): CurrentEventsByPersistenceIdQuery with EventsByPersistenceIdQuery = {
-    val journalPluginId = as.settings.config.getString("serenity.persistence.query-journal")
+  private def getJournal()
+    : CurrentEventsByPersistenceIdQuery with EventsByPersistenceIdQuery = {
+    val journalPluginId =
+      as.settings.config.getString("serenity.persistence.query-journal")
     PersistenceQuery(as).readJournalFor(journalPluginId)
   }
 
-  val source = getJournal().currentEventsByPersistenceId("user-7e46aab2-d5ca-499d-9908-f6716632a965", 0, Long.MaxValue)
+  val source = getJournal().currentEventsByPersistenceId(
+    "user-7e46aab2-d5ca-499d-9908-f6716632a965",
+    0,
+    Long.MaxValue
+  )
 
-  source.map(env => toMsg.fromMessage(env.event))
-      .runForeach(e => println(e))
+  source.map(env => toMsg.fromMessage(env.event)).runForeach(e => println(e))
 
 }
 
 object StartUserActor extends App {
-  implicit val as = ActorSystem("UserExtractor")
+  implicit val as  = ActorSystem("UserExtractor")
   implicit val mat = ActorMaterializer()
-  val repo = new NoOpRepo
+  val repo         = new NoOpRepo
 
   private val id = UserId(UUID.fromString("7e46aab2-d5ca-499d-9908-f6716632a965"))
-  val ua = as.actorOf(UserActor(repo, id))
+  val ua         = as.actorOf(UserActor(repo, id))
   ua.tell(UpdateView(id), Actor.noSender)
 }
 

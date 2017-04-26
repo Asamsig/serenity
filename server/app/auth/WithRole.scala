@@ -10,8 +10,9 @@ import scala.concurrent.Future
 
 case class WithRole(roles: Role*) extends Authorization[User, JWTAuthenticator] {
 
-  override def isAuthorized[B](identity: User, authenticator: JWTAuthenticator)
-      (implicit request: Request[B]): Future[Boolean] =
+  override def isAuthorized[B](identity: User, authenticator: JWTAuthenticator)(
+      implicit request: Request[B]
+  ): Future[Boolean] =
     Future.successful(identity.roles.exists(roles.contains))
 
 }

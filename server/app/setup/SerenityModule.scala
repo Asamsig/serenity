@@ -4,7 +4,6 @@ import javax.inject.Inject
 
 import akka.actor.{ActorRef, ActorSystem}
 import com.google.inject.{AbstractModule, Provider}
-import controller._
 import controllers._
 import controllers.helpers.RouterCtrl
 import net.ceedubs.ficus.Ficus._
@@ -17,7 +16,10 @@ import repositories.view.{SqlUserRepository, UserRepository}
 import services.UpdateViewStarter
 import services.eventbrite.EventbriteTokens
 
-class SerenityModule(environment: Environment, config: Configuration) extends AbstractModule with AkkaGuiceSupport with ScalaModule {
+class SerenityModule(environment: Environment, config: Configuration)
+    extends AbstractModule
+    with AkkaGuiceSupport
+    with ScalaModule {
 
   override def configure(): Unit = {
     val ctrls = ScalaMultibinder.newSetBinder[RouterCtrl](binder)
@@ -30,17 +32,23 @@ class SerenityModule(environment: Environment, config: Configuration) extends Ab
 
     bind[UserRepository].to[SqlUserRepository]
 
-    bind[EventbriteWebHookConfig]
-        .toInstance(EventbriteWebHookConfig(config.underlying.getString("serenity.eventbrite.secret")))
-    bind[EventbriteTokens].toInstance(config.underlying.as[EventbriteTokens]("serenity.eventbrite.token"))
+    bind[EventbriteWebHookConfig].toInstance(
+      EventbriteWebHookConfig(config.underlying.getString("serenity.eventbrite.secret"))
+    )
+    bind[EventbriteTokens].toInstance(
+      config.underlying.as[EventbriteTokens]("serenity.eventbrite.token")
+    )
 
-    bind[ActorRef].annotatedWithName("UserManagerActor").toProvider(classOf[UserManagerActorProvider]).asEagerSingleton()
+    bind[ActorRef]
+      .annotatedWithName("UserManagerActor")
+      .toProvider(classOf[UserManagerActorProvider])
+      .asEagerSingleton()
 
     bind[UpdateViewStarter].asEagerSingleton()
   }
-
 }
 
-class UserManagerActorProvider @Inject()(as: ActorSystem, repo: UserRepository) extends Provider[ActorRef] {
+class UserManagerActorProvider @Inject()(as: ActorSystem, repo: UserRepository)
+    extends Provider[ActorRef] {
   override def get() = as.actorOf(UserManagerActor(repo), "user-manager")
 }

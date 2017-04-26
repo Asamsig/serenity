@@ -8,7 +8,8 @@ import repositories.view.UserRepository
 
 import scala.util.Failure
 
-class UserManagerActor(repo: UserRepository, userActorProps: UserId => Props) extends Actor {
+class UserManagerActor(repo: UserRepository, userActorProps: UserId => Props)
+    extends Actor {
 
   implicit val ec = context.system.dispatcher
 
@@ -24,21 +25,21 @@ class UserManagerActor(repo: UserRepository, userActorProps: UserId => Props) ex
       val respondTo = sender()
       repo.findUserIdByEmail(cmd.attendee.profile.email).foreach {
         case Some(uid) => getOrCreateUserActor(uid).tell(cmd, respondTo)
-        case None => getOrCreateUserActor(UserId.generate()).tell(cmd, respondTo)
+        case None      => getOrCreateUserActor(UserId.generate()).tell(cmd, respondTo)
       }
 
     case cmd: HospesImportCmd =>
       val respondTo = sender()
       repo.findUsersIdByEmail(cmd.user.email.map(_.address)).foreach {
         case Nil => getOrCreateUserActor(UserId.generate()).tell(cmd, respondTo)
-        case _ => respondTo ! Failure(ValidationFailed("User exist"))
+        case _   => respondTo ! Failure(ValidationFailed("User exist"))
       }
 
     case cmd: UpdateCredentialsCmd =>
       val respondTo = sender()
       repo.findUserIdByEmail(cmd.email).foreach {
         case Some(uid) => getOrCreateUserActor(uid).tell(cmd, respondTo)
-        case None => respondTo ! Failure(ValidationFailed("User does not exist"))
+        case None      => respondTo ! Failure(ValidationFailed("User does not exist"))
       }
   }
 
@@ -47,24 +48,28 @@ class UserManagerActor(repo: UserRepository, userActorProps: UserId => Props) ex
       val respondTo = sender()
       repo.findUserIdByEmail(email).foreach {
         case Some(uid) => getOrCreateUserActor(uid).tell(GetUser(uid), respondTo)
-        case None => respondTo ! Failure(ValidationFailed("User with email doesn't exist"))
+        case None =>
+          respondTo ! Failure(ValidationFailed("User with email doesn't exist"))
       }
 
-    case qry@GetUserCredentials(email) =>
+    case qry @ GetUserCredentials(email) =>
       val respondTo = sender()
       repo.findUserIdByEmail(email).foreach {
         case Some(uid) => getOrCreateUserActor(uid).tell(qry, respondTo)
-        case None => respondTo ! CredentialsNotFound
+        case None      => respondTo ! CredentialsNotFound
       }
 
-    case qry@UpdateView(uid) =>
+    case qry @ UpdateView(uid) =>
       getOrCreateUserActor(uid).forward(qry)
   }
 
 }
 
 object UserManagerActor {
-  def apply(repo: UserRepository, userActorProps: (UserRepository, UserId) => Props = UserActor.apply): Props = {
+  def apply(
+      repo: UserRepository,
+      userActorProps: (UserRepository, UserId) => Props = UserActor.apply
+  ): Props = {
     val curried: UserId => Props = userActorProps.curried(repo)
     Props(classOf[UserManagerActor], repo: UserRepository, curried)
   }

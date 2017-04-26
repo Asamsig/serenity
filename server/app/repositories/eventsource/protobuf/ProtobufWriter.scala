@@ -11,4 +11,3 @@ trait ProtobufReader[A] {
 }
 
 trait ProtobufFormat[A] extends ProtobufWriter[A] with ProtobufReader[A]
-

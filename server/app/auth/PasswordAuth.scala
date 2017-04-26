@@ -20,9 +20,11 @@ class PasswordAuth @Inject()(
 ) extends DelegableAuthInfoDAO[PasswordInfo] {
 
   override def find(loginInfo: LoginInfo): Future[Option[PasswordInfo]] = {
-    if (loginInfo.providerKey == adminUser.user.mainEmail.address)
+    if (loginInfo.providerKey == adminUser.user.mainEmail.address) {
       Future.successful(Some(adminUser.auth))
-    else userService.findAuth(loginInfo.providerKey)
+    } else {
+      userService
+        .findAuth(loginInfo.providerKey)
         .map(_.flatMap {
           case SerenityAuth(pwd) =>
             Some(PasswordInfo(BCryptPasswordHasher.ID, pwd, None))
@@ -33,19 +35,27 @@ class PasswordAuth @Inject()(
         .recover {
           case _ => None
         }
+    }
   }
 
   override def add(loginInfo: LoginInfo, authInfo: PasswordInfo): Future[PasswordInfo] =
     save(loginInfo, authInfo)
 
-  override def update(loginInfo: LoginInfo, authInfo: PasswordInfo): Future[PasswordInfo] =
+  override def update(
+      loginInfo: LoginInfo,
+      authInfo: PasswordInfo
+  ): Future[PasswordInfo] =
     save(loginInfo, authInfo)
 
-  override def save(loginInfo: LoginInfo, authInfo: PasswordInfo): Future[PasswordInfo] = {
-    authInfo.hasher match {
+  override def save(
+      loginInfo: LoginInfo,
+      passwordInfo: PasswordInfo
+  ): Future[PasswordInfo] = {
+    passwordInfo.hasher match {
       case BCryptPasswordHasher.ID =>
-        val future = userService.updateCredentials(loginInfo.providerKey, authInfo.password)
-            .map(t => PasswordInfo(BCryptPasswordHasher.ID, t.password))
+        val future = userService
+          .updateCredentials(loginInfo.providerKey, passwordInfo.password)
+          .map(t => PasswordInfo(BCryptPasswordHasher.ID, t.password))
         future
 
       case id => throw new IllegalStateException(s"Hash type not supported $id")

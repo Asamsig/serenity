@@ -11,12 +11,10 @@ case class User(
     mainEmail: Email,
     emails: Seq[Email] = Seq(),
     phone: Option[String] = None,
-
     createdDate: LocalDateTime,
     firstName: Option[String] = None,
     lastName: Option[String] = None,
     address: Option[String] = None,
-
     roles: Set[Role] = Set(),
     memberships: Set[Membership] = Set()
 ) extends Identity {

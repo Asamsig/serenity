@@ -7,9 +7,7 @@ object Auths {
     def salt: Option[String]
   }
 
-  case class HospesAuth(
-      password: String,
-      salt: Option[String]) extends BasicAuth
+  case class HospesAuth(password: String, salt: Option[String]) extends BasicAuth
 
   case class SerenityAuth(
       password: String
