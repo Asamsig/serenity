@@ -2,7 +2,6 @@ package repositories.eventsource.users
 
 import akka.actor.{Actor, ActorRef, Props}
 import models.user.UserId
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol._
 import repositories.view.UserRepository
@@ -10,6 +9,8 @@ import repositories.view.UserRepository
 import scala.util.Failure
 
 class UserManagerActor(repo: UserRepository, userActorProps: UserId => Props) extends Actor {
+
+  implicit val ec = context.system.dispatcher
 
   override def receive: Receive = commands orElse query
 
