@@ -19,11 +19,11 @@ object Memberships {
 
   object MembershipIssuer extends Enumeration {
     type Issuer = Value
-    val JavaBin = Value
+    val JavaBin  = Value
     val JavaZone = Value
 
     def toInt(i: Issuer): Int = i match {
-      case JavaBin => 1
+      case JavaBin  => 1
       case JavaZone => 2
     }
 

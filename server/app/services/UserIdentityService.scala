@@ -10,7 +10,8 @@ import play.api.Logger
 
 import scala.concurrent.Future
 
-class UserIdentityService @Inject()(userService: UserService, adminUser: AdminUser) extends IdentityService[User] {
+class UserIdentityService @Inject()(userService: UserService, adminUser: AdminUser)
+    extends IdentityService[User] {
 
   val logger = Logger(classOf[UserIdentityService])
 

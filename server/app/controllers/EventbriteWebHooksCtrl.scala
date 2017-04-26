@@ -22,28 +22,31 @@ class EventbriteWebHooksCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],
     config: EventbriteWebHookConfig,
     eventbriteService: EventbriteService
-) extends RouterCtrl with Controller with WebHookInfoJson {
+) extends RouterCtrl
+    with Controller
+    with WebHookInfoJson {
 
   import silhouette.UnsecuredAction
 
   private val storePath = EnumPathExtractor.binders(EventbriteStore)
 
   override def withRoutes(): Routes = {
-    case POST(p"/api/webhook/${storePath(store)}" ? q"token=$secret") => this.webHook(store, secret)
+    case POST(p"/api/webhook/${storePath(store)}" ? q"token=$secret") =>
+      this.webHook(store, secret)
   }
 
-  def webHook(store: EventbriteStore.Store, secret: String) = UnsecuredAction.async(parse.json) {
-    request =>
+  def webHook(store: EventbriteStore.Store, secret: String) =
+    UnsecuredAction.async(parse.json) { request =>
       if (config.secret != secret)
         Future.successful(Results.Unauthorized("Unauthorized"))
       else {
         val info = request.body.as[WebHookDetails]
         eventbriteService.handleWebHook(EventbriteWebHook(store, info)).map {
-          case Success => Results.Accepted(EmptyContent())
-          case Failure => Results.InternalServerError(EmptyContent())
+          case Success      => Results.Accepted(EmptyContent())
+          case Failure      => Results.InternalServerError(EmptyContent())
           case NotSupported => Results.Gone(EmptyContent())
         }
       }
-  }
+    }
 
 }

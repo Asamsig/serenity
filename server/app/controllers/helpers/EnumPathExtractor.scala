@@ -8,7 +8,9 @@ object EnumPathExtractor {
     val pb = new PathBindable.Parsing[E#Value](
       enum.withName(_),
       (e: E#Value) => e.toString,
-      (k: String, e: Exception) => "Cannot parse %s as %s: %s".format(k, enum.getClass.getName, e.getMessage))
+      (k: String, e: Exception) =>
+        "Cannot parse %s as %s: %s".format(k, enum.getClass.getName, e.getMessage)
+    )
     new PathBindableExtractor[E#Value]()(pb)
   }
 

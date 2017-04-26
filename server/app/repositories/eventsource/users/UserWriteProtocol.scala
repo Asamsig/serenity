@@ -81,7 +81,7 @@ object UserWriteProtocol {
 
   object MembershipAction extends Enumeration {
     type Action = Value
-    val Add = Value
+    val Add    = Value
     val Remove = Value
   }
 
@@ -96,4 +96,3 @@ object UserWriteProtocol {
   case class UpdateCredentialsCmd(email: String, hashedPassword: String) extends Cmd
 
 }
-

@@ -4,7 +4,12 @@ import akka.persistence.journal.EventSeq
 import com.google.protobuf.Message
 import models.Evt
 import repositories.eventsource.protobuf.ProtobufReadEventAdapter
-import users.UserWriteProtocol.{BasicAuthEvt, HospesUserImportEvt, MembershipUpdateEvt, UserUpdatedEvt}
+import users.UserWriteProtocol.{
+  BasicAuthEvt,
+  HospesUserImportEvt,
+  MembershipUpdateEvt,
+  UserUpdatedEvt
+}
 
 class DomainReadEventAdapter extends ProtobufReadEventAdapter {
 
@@ -23,13 +28,12 @@ class DomainReadEventAdapter extends ProtobufReadEventAdapter {
       EventSeq.single(evt)
     case _ =>
       throw new IllegalStateException(
-        s"class [${event.getClass.getName}] with '$manifest' can't be deserialize by protobuf")
+        s"class [${event.getClass.getName}] with '$manifest' can't be deserialize by protobuf"
+      )
   }
 
   def fromMessage(message: Any): Any = {
-    fromJournal(
-      message,
-      message.getClass.getSimpleName.replace("Message", "Evt")).events.head
+    fromJournal(message, message.getClass.getSimpleName.replace("Message", "Evt")).events.head
   }
 
 }

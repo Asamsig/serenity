@@ -36,15 +36,14 @@ class AdminCtrl @Inject()(
 
   def updateView(id: String) = SecuredAction(WithRole(AdminRole)).async(parse.empty) {
     _ =>
-      UserId.fromString(id)
-          .map(uuid => {
-            updateUserViewService.updateUser(uuid)
-                .map(_ => Results.Ok)
-                .recover {
-                  case NonFatal(t) => Results.InternalServerError(t.getMessage)
-                }
-          })
-          .getOrElse(Future.successful(Results.BadRequest(s"Invalid input $id")))
+      UserId
+        .fromString(id)
+        .map(uuid => {
+          updateUserViewService.updateUser(uuid).map(_ => Results.Ok).recover {
+            case NonFatal(t) => Results.InternalServerError(t.getMessage)
+          }
+        })
+        .getOrElse(Future.successful(Results.BadRequest(s"Invalid input $id")))
   }
 
 }

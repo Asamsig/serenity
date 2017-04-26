@@ -18,14 +18,16 @@ trait QueryStream[Env] extends Actor {
   def streamLive: Source[Env, NotUsed]
 
   private var _curSeqNum: Long = 0
-  private var _live = false
+  private var _live            = false
 
-  def live = _live
+  def live                  = _live
   def currentSequenceNumber = _curSeqNum
 
   override def preStart() = {
     super.preStart()
-    streamCurrent.runWith(Sink.actorRef(self, LiveEvents))(ActorMaterializer()(context.system))
+    streamCurrent.runWith(Sink.actorRef(self, LiveEvents))(
+      ActorMaterializer()(context.system)
+    )
   }
 
   override def aroundReceive(receive: Receive, msg: Any): Unit = {
@@ -34,15 +36,16 @@ trait QueryStream[Env] extends Actor {
   }
 
   def handleStreamEvents(msg: Any): Unit = msg match {
-    case evt@EventEnvelope2(_, _, snr, _) =>
+    case evt @ EventEnvelope2(_, _, snr, _) =>
       _curSeqNum = snr
-    case evt@EventEnvelope(_, _, snr, _) =>
+    case evt @ EventEnvelope(_, _, snr, _) =>
       _curSeqNum = snr
     case LiveEvents =>
-      streamLive.runWith(Sink.actorRef(self, LiveEvents))(ActorMaterializer()(context.system))
+      streamLive.runWith(Sink.actorRef(self, LiveEvents))(
+        ActorMaterializer()(context.system)
+      )
       _live = true
     case _ =>
-
   }
 }
 

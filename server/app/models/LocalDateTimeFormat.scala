@@ -9,11 +9,14 @@ class LocalDateTimeFormat extends Format[LocalDateTime] {
 
   override def reads(json: JsValue): JsResult[LocalDateTime] = {
     try {
-      json.validate[String].map(v => {
-        OffsetDateTime.parse(v).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime
-      })
+      json
+        .validate[String]
+        .map(v => {
+          OffsetDateTime.parse(v).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime
+        })
     } catch {
-      case e: DateTimeParseException => JsError("not a valid datetime format with timezone")
+      case e: DateTimeParseException =>
+        JsError("not a valid datetime format with timezone")
     }
   }
 

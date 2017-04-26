@@ -16,13 +16,15 @@ object hospes {
       validated: Boolean,
       timezone: String,
       superuser: Boolean,
-      openidkey: Option[BigInt])
+      openidkey: Option[BigInt]
+  )
 
   case class MembershipJson(
       id: Int,
       year: Int,
       boughtdate: String,
       bought_by_person_id: Int,
-      member_person_id: Option[Int])
+      member_person_id: Option[Int]
+  )
 
 }

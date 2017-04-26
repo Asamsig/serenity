@@ -10,18 +10,20 @@ import scala.util.Random
 
 class HospesPasswordHasher extends PasswordHasher {
   private lazy val encoder = Base64.getEncoder
-  private lazy val digest = MessageDigest.getInstance("SHA")
+  private lazy val digest  = MessageDigest.getInstance("SHA")
 
   override def id: String = ID
 
   override def hash(plainPassword: String): PasswordInfo = {
     val salt = Random.alphanumeric.take(16).mkString
-    val pwd = sha(plainPassword, salt)
+    val pwd  = sha(plainPassword, salt)
     PasswordInfo(ID, pwd, Some(salt))
   }
 
   private def sha(plainPassword: String, salt: String) =
-    new String(encoder.encode(digest.digest(s"{$plainPassword} salt={$salt}".getBytes("UTF-8"))))
+    new String(
+      encoder.encode(digest.digest(s"{$plainPassword} salt={$salt}".getBytes("UTF-8")))
+    )
 
   override def matches(passwordInfo: PasswordInfo, suppliedPassword: String): Boolean =
     sha(suppliedPassword, passwordInfo.salt.get) == passwordInfo.password

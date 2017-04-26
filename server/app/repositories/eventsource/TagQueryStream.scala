@@ -18,4 +18,3 @@ trait TagQueryStream extends QueryStream[EventEnvelope2] {
     journal.eventsByTag(tagName, Sequence(currentSequenceNumber + 1))
 
 }
-

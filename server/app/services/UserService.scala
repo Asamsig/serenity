@@ -15,11 +15,10 @@ class UserService @Inject()(userRepository: UserRepository) {
   val logger = Logger(classOf[UserService])
 
   def findUser(email: String): Future[Option[User]] = {
-    userRepository.findUserIdByEmail(email)
-        .flatMap {
-          case Some(uid) => userRepository.fetchUserById(uid)
-          case None => Future.successful(None)
-        }
+    userRepository.findUserIdByEmail(email).flatMap {
+      case Some(uid) => userRepository.fetchUserById(uid)
+      case None      => Future.successful(None)
+    }
   }
 
   def findAuth(email: String): Future[Option[BasicAuth]] = {

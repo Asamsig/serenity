@@ -9,7 +9,7 @@ object Roles {
   object Role {
     def apply(role: String) = role match {
       case AdminRole.name => AdminRole
-      case _ => UnknownRole
+      case _              => UnknownRole
     }
   }
 

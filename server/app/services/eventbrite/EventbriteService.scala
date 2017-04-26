@@ -28,12 +28,13 @@ class EventbriteService @Inject()(
         logger.debug("WebHook test ok!")
         Future.successful(Success)
       case "attendee.updated" =>
-        val result = client.attendee(webhook.details.apiUrl, webhook.store)
-            .map(attendee => {
-              userManagerActor ! CreateOrUpdateUserCmd(attendee)
-              logger.debug(s"Found attendee $attendee")
-              Success
-            })
+        val result = client
+          .attendee(webhook.details.apiUrl, webhook.store)
+          .map(attendee => {
+            userManagerActor ! CreateOrUpdateUserCmd(attendee)
+            logger.debug(s"Found attendee $attendee")
+            Success
+          })
         result.recover {
           case t =>
             logger.warn(s"Failed to process webhook $webhook", t)

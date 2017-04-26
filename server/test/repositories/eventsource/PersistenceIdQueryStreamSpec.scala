@@ -3,7 +3,10 @@ package repositories.eventsource
 import akka.actor.{Actor, ActorRef, Props, Stash}
 import akka.persistence.PersistentActor
 import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
-import akka.persistence.query.scaladsl.{CurrentEventsByPersistenceIdQuery, EventsByPersistenceIdQuery}
+import akka.persistence.query.scaladsl.{
+  CurrentEventsByPersistenceIdQuery,
+  EventsByPersistenceIdQuery
+}
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import akka.testkit.TestProbe
 import helpers.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
@@ -11,8 +14,9 @@ import helpers.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
 import scala.concurrent.duration.DurationInt
 import scala.language.postfixOps
 
-class PersistenceIdQueryStreamSpec extends AkkaSuite("PersistenceIdsQuerySpec", AkkaConfig.inMemoryPersistence())
-    with InMemoryCleanup{
+class PersistenceIdQueryStreamSpec
+    extends AkkaSuite("PersistenceIdsQuerySpec", AkkaConfig.inMemoryPersistence())
+    with InMemoryCleanup {
 
   ignore("Events") { // todo: setup fault. No configured serialization-bindings for class [java.lang.Integer]
     it("should find all stored events") {
@@ -30,7 +34,7 @@ class PersistenceIdQueryStreamSpec extends AkkaSuite("PersistenceIdsQuerySpec", 
 
     it("should find all stored and live events") {
       val probe: TestProbe = TestProbe()
-      val store = system.actorOf(Props(classOf[SomeStore]))
+      val store            = system.actorOf(Props(classOf[SomeStore]))
 
       store ! 1
       store ! 2
@@ -59,18 +63,26 @@ class SomeStore extends PersistentActor {
   }
 
   override def receiveCommand: Receive = {
-    case m: Int => persist(m) { evt => sender() ! Saved}
+    case m: Int =>
+      persist(m) { evt =>
+        sender() ! Saved
+      }
   }
 
 }
 
-class EventActor(to: Option[ActorRef] = None) extends PersistenceIdQueryStream with Actor with Stash {
+class EventActor(to: Option[ActorRef] = None)
+    extends PersistenceIdQueryStream
+    with Actor
+    with Stash {
   import repositories.eventsource.QueryStream.LiveEvents
 
   override val persistenceId: String = "PersistenceIdsQuerySpec"
 
-  override def journal: CurrentEventsByPersistenceIdQuery with EventsByPersistenceIdQuery =
-    PersistenceQuery(context.system).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
+  override def journal
+    : CurrentEventsByPersistenceIdQuery with EventsByPersistenceIdQuery =
+    PersistenceQuery(context.system)
+      .readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
 
   var sum = 0
 
