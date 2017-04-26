@@ -12,19 +12,20 @@ case class Context(
 
 object SchemaDefinition {
 
-   implicit val MembershipIssuerType = derive.deriveEnumType[MembershipIssuer.Issuer]()
-   implicit val EventbriteMetaType = derive.deriveObjectType[Unit, EventbriteMeta]()
-   implicit val MembershipType = derive.deriveObjectType[Unit, Membership](
+  implicit val MembershipIssuerType = derive.deriveEnumType[MembershipIssuer.Issuer]()
+  implicit val EventbriteMetaType   = derive.deriveObjectType[Unit, EventbriteMeta]()
+  implicit val MembershipType = derive.deriveObjectType[Unit, Membership](
     ExcludeFields("issuer")
   )
-   implicit val EmailType = derive.deriveObjectType[Unit, Email]()
-   implicit val UserType = derive.deriveObjectType[Option[User], User](
+  implicit val EmailType = derive.deriveObjectType[Unit, Email]()
+  implicit val UserType = derive.deriveObjectType[Option[User], User](
     ExcludeFields("roles", "memberships")
   )
 
-   val QueryType = {
+  val QueryType = {
     ObjectType(
-      "Query", fields[Context, Unit](
+      "Query",
+      fields[Context, Unit](
         Field(
           "me",
           OptionType(UserType),
