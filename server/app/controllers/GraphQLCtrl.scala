@@ -28,14 +28,14 @@ class GraphQLCtrl @Inject()(
   import silhouette.UserAwareAction
 
   override def withRoutes(): Routes = {
-    case GET(p"/render-schema") =>
+    case GET(p"/api/render-schema") =>
       renderSchema
     case GET(
-        p"/graphql"
+        p"/api/graphql"
           ? q"query=$query" & q_o"operation=$operation" & q_o"variables=$variables"
         ) =>
       graphqlRequest(query, operation, variables)
-    case POST(p"/graphql") =>
+    case POST(p"/api/graphql") =>
       graphqlBody()
   }
 
