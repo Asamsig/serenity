@@ -1,17 +1,13 @@
-package models.graphql
+package services.graphql
 
-import models.Types
+import services.graphql.Permissions.{IsSelf, WithRole}
 import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
-import models.user.Roles.Role
+import models.user.Roles.{AdminRole, Role}
 import models.user.{Email, User, UserId}
 import sangria.macros.derive
 import sangria.macros.derive.ReplaceField
 import sangria.schema._
 import sangria.validation.ValueCoercionViolation
-
-case class Context(
-    user: Option[User]
-)
 
 object SchemaDefinition extends Types {
 
@@ -53,14 +49,24 @@ object SchemaDefinition extends Types {
     )
   )
 
+  val UserIdArgument = Argument(
+    name = "userId",
+    argumentType = OptionInputType(UserIdType)
+  )
+
   val QueryType = {
     ObjectType(
       "Query",
-      fields[Context, Unit](
+      fields[GraphQlContext, Unit](
         Field(
-          "me",
+          "user",
           OptionType(UserType),
-          resolve = _.ctx.user
+          arguments = UserIdArgument :: Nil,
+          tags = IsSelf :: WithRole(Seq(AdminRole)) :: Nil,
+          resolve = ctx => {
+            val userId = ctx.argOpt[UserId]("userId").getOrElse(ctx.ctx.user.get.userId)
+            ctx.ctx.userRepository.fetchUserById(userId)
+          }
         )
       )
     )

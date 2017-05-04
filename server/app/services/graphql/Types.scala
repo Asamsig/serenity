@@ -1,4 +1,4 @@
-package models
+package services.graphql
 
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime, ZoneOffset}
 import java.util.UUID

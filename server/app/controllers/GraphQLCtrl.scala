@@ -4,12 +4,18 @@ import auth.DefaultEnv
 import com.google.inject.Inject
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
-import models.graphql.{Context, SchemaDefinition}
+import services.graphql.{
+  PermissionEnforcerMiddleware,
+  SchemaDefinition,
+  GraphQlContext,
+  SecurityException
+}
 import models.user.User
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.{Action, Controller}
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
+import repositories.view.UserRepository
 import sangria.ast.Document
 import sangria.execution._
 import sangria.parser.{QueryParser, SyntaxError}
@@ -19,6 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class GraphQLCtrl @Inject()(
+    userRepository: UserRepository,
     silhouette: Silhouette[DefaultEnv]
 )(implicit ec: ExecutionContext)
     extends RouterCtrl
@@ -93,6 +100,10 @@ class GraphQLCtrl @Inject()(
       Json.parse(variables).as[JsObject]
     }
 
+  private val errorHandler: Executor.ExceptionHandler = {
+    case (_, SecurityException(message)) => HandledException(message)
+  }
+
   private def executeGraphQLQuery(
       query: Document,
       variables: JsObject,
@@ -103,9 +114,11 @@ class GraphQLCtrl @Inject()(
     val executor = Executor.execute(
       schema = SchemaDefinition.SerenitySchema,
       queryAst = query,
-      userContext = Context(user),
+      userContext = GraphQlContext(user, userRepository),
       operationName = operation,
-      variables = variables
+      variables = variables,
+      middleware = PermissionEnforcerMiddleware :: Nil,
+      exceptionHandler = errorHandler
     )
 
     executor.map(v => Ok(v)).recover {
