@@ -1,4 +1,4 @@
-package services.graphql
+package services
 
 import java.time.{LocalDate, LocalDateTime, OffsetDateTime, ZoneOffset}
 import java.util.UUID
@@ -10,7 +10,7 @@ import sangria.validation.ValueCoercionViolation
 
 import scala.util.{Failure, Success, Try}
 
-trait Types {
+package object graphql {
 
   case object UUIDCoercionViolation extends ValueCoercionViolation("UUID value expected")
 
@@ -25,14 +25,14 @@ trait Types {
     coerceOutput =
       (value: UUID, capabilities: Set[MarshallerCapability]) => value.toString,
     coerceUserInput = {
-      case s: String ⇒ Right(UUID.fromString(s))
-      case u: UUID   ⇒ Right(u)
-      case _         ⇒ Left(UUIDCoercionViolation)
+      case s: String => Right(UUID.fromString(s))
+      case u: UUID   => Right(u)
+      case _         => Left(UUIDCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) ⇒
+      case ast.StringValue(s, _, _) =>
         toValue(() => UUID.fromString(s), UUIDCoercionViolation)
-      case _ ⇒ Left(UUIDCoercionViolation)
+      case _ => Left(UUIDCoercionViolation)
     }
   )
 
@@ -42,19 +42,19 @@ trait Types {
     coerceOutput = (value: LocalDateTime, capabilities: Set[MarshallerCapability]) =>
       value.atOffset(ZoneOffset.UTC).toString,
     coerceUserInput = {
-      case s: String ⇒
+      case s: String =>
         Right(OffsetDateTime.parse(s).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime)
-      case u: LocalDateTime ⇒ Right(u)
-      case _                ⇒ Left(LocalDateTimeCoercionViolation)
+      case u: LocalDateTime => Right(u)
+      case _                => Left(LocalDateTimeCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) ⇒
+      case ast.StringValue(s, _, _) =>
         toValue(
           () =>
             OffsetDateTime.parse(s).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime,
           LocalDateTimeCoercionViolation
         )
-      case _ ⇒ Left(LocalDateTimeCoercionViolation)
+      case _ => Left(LocalDateTimeCoercionViolation)
     }
   )
 
@@ -64,17 +64,17 @@ trait Types {
     coerceOutput =
       (value: LocalDate, capabilities: Set[MarshallerCapability]) => value.toString,
     coerceUserInput = {
-      case s: String    ⇒ Right(LocalDate.parse(s))
-      case u: LocalDate ⇒ Right(u)
-      case _            ⇒ Left(LocalDateTimeCoercionViolation)
+      case s: String    => Right(LocalDate.parse(s))
+      case u: LocalDate => Right(u)
+      case _            => Left(LocalDateTimeCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) ⇒
+      case ast.StringValue(s, _, _) =>
         toValue(
           () => OffsetDateTime.parse(s).atZoneSameInstant(ZoneOffset.UTC).toLocalDate,
           LocalDateTimeCoercionViolation
         )
-      case _ ⇒ Left(LocalDateTimeCoercionViolation)
+      case _ => Left(LocalDateTimeCoercionViolation)
     }
   )
 
@@ -84,8 +84,7 @@ trait Types {
   ): Either[V, T] = {
     Try(f()) match {
       case Success(v) => Right(v)
-      case Failure(t) => Left(violation)
+      case Failure(_) => Left(violation)
     }
   }
-
 }

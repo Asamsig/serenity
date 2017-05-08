@@ -9,7 +9,7 @@ import sangria.macros.derive.ReplaceField
 import sangria.schema._
 import sangria.validation.ValueCoercionViolation
 
-object SchemaDefinition extends Types {
+object SchemaDefinition {
 
   case object UserIdCoercionViolation
       extends ValueCoercionViolation("UserId value expected")
