@@ -94,7 +94,7 @@ class GraphQLCtrl @Inject()(
   }
 
   private def parseVariables(variables: String) =
-    if (variables.trim == "" || variables.trim == "null") {
+    if (variables.trim.isEmpty || variables.trim == "null") {
       Json.obj()
     } else {
       Json.parse(variables).as[JsObject]
