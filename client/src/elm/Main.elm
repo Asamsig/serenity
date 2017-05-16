@@ -5,10 +5,8 @@ import Html.Attributes exposing (..)
 import View.LoginForm
 import Model exposing (Model)
 import Messages exposing (Msg(..))
-import Http
-import Json.Decode as Decode
-import Json.Encode as Encode
 import Ports
+import Api.LoginAction exposing (..)
 
 
 -- APP
@@ -30,23 +28,6 @@ sub model =
         [ Ports.fetchedToken Messages.StoredToken
         , Ports.loggedOut Messages.LoggedOut
         ]
-
-
-loginAction : String -> String -> Cmd Msg
-loginAction usr pwd =
-    Http.send
-        LoggedIn
-        (Http.post
-            "api/login"
-            (Http.jsonBody
-                (Encode.object
-                    [ ( "username", Encode.string usr )
-                    , ( "password", Encode.string pwd )
-                    ]
-                )
-            )
-            (Decode.field "token" Decode.string)
-        )
 
 
 
