@@ -1,5 +1,6 @@
 module Messages exposing (Msg(..))
 
+import Model
 import Http
 
 
@@ -11,3 +12,4 @@ type Msg
     | UpdateUsername String
     | UpdatePassword String
     | StoredToken (Maybe String)
+    | UserInfo (Result Http.Error Model.UserInfo)

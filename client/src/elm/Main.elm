@@ -6,7 +6,8 @@ import View.LoginForm
 import Model exposing (Model)
 import Messages exposing (Msg(..))
 import Ports
-import Api.LoginAction exposing (..)
+import Api.LoginAction exposing (loginAction)
+import Api.UserInfoAction exposing (userInfoAction)
 
 
 -- APP
@@ -70,21 +71,27 @@ update msg model =
                     { model | auth = Model.LoggedOut { formData | loginErr = Just "login_failed" } } ! []
 
         LoggedIn (Ok token) ->
-            { model | auth = Model.LoggedIn token } ! [ Ports.login token ]
+            { model | auth = Model.LoggedIn token } ! [ Ports.login token, userInfoAction token ]
 
         LogOut ->
             model ! [ Ports.logout () ]
 
         LoggedOut () ->
-            { model | auth = Model.initAuthModel } ! []
+            Model.initModel ! []
 
         StoredToken mbyToken ->
             case mbyToken of
                 Just token ->
-                    { model | auth = Model.LoggedIn token } ! []
+                    { model | auth = Model.LoggedIn token } ! [ userInfoAction token ]
 
                 Nothing ->
                     model ! []
+
+        UserInfo (Ok res) ->
+            { model | userInfo = Just res } ! []
+
+        UserInfo (Err e) ->
+            model ! []
 
 
 

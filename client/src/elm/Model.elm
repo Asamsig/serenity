@@ -1,4 +1,4 @@
-module Model exposing (Model, Auth(..), LoginFormData, init, initAuthModel)
+module Model exposing (Model, Auth(..), UserInfo, LoginFormData, init, initModel)
 
 import Ports
 
@@ -15,18 +15,29 @@ type alias LoginFormData =
     }
 
 
-type alias Model =
-    { auth : Auth
+type alias UserInfo =
+    { userId : String
+    , firstName : String
+    , lastName : String
+    , mainEmail : String
     }
 
 
-initAuthModel : Auth
-initAuthModel =
-    (LoggedOut (LoginFormData "" "" Nothing))
+type alias Model =
+    { auth : Auth
+    , userInfo : Maybe UserInfo
+    }
+
+
+initModel : Model
+initModel =
+    { auth = LoggedOut (LoginFormData "" "" Nothing)
+    , userInfo = Nothing
+    }
 
 
 init : ( Model, Cmd msg )
 init =
-    ( Model initAuthModel
+    ( initModel
     , Ports.fetchToken ()
     )
