@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Model
 import Messages exposing (Msg(..))
 import Html.Events exposing (onClick, onInput)
+import View.UserInfoView exposing (userInfoView)
 
 
 view : Model.Model -> Html Msg
@@ -39,8 +40,4 @@ view model =
                 ]
 
         Model.LoggedIn token ->
-            div
-                [ class "h1" ]
-                [ text "Welcome"
-                , button [ onClick Messages.LogOut ] [ text "Log Out" ]
-                ]
+            userInfoView model
