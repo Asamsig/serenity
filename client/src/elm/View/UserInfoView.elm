@@ -11,7 +11,7 @@ userInfoView : Model.Model -> Html Msg
 userInfoView model =
     div []
         [ div
-            [ class "h1" ]
+            []
             [ text "Welcome"
             , button [ onClick Messages.LogOut ] [ text "Log Out" ]
             ]

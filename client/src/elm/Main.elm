@@ -101,15 +101,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        [ class "container"
-        , style
+        [ style
             [ ( "margin-top", "30px" )
             , ( "text-align", "center" )
             ]
         ]
-        [ div [ class "row" ]
-            [ div [ class "col-xs-12" ]
-                [ div [ class "jumbotron" ]
+        [ div []
+            [ div []
+                [ div []
                     [ View.LoginForm.view model
                     , p [] [ text ("javaBin  membership frontend") ]
                     ]
