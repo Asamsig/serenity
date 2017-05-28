@@ -1,9 +1,9 @@
 package services.graphql
 
 import models.user.User
-import repositories.view.UserRepository
+import services.UserService
 
 case class GraphQlContext(
     user: Option[User],
-    userRepository: UserRepository
+    userService: UserService
 )

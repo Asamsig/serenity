@@ -3,7 +3,7 @@ package services
 import javax.inject.Inject
 
 import models.user.Auths.{BasicAuth, SerenityAuth}
-import models.user.User
+import models.user.{User, UserId}
 import play.api.Logger
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.view.UserRepository
@@ -20,6 +20,9 @@ class UserService @Inject()(userRepository: UserRepository) {
       case None      => Future.successful(None)
     }
   }
+
+  def findUserById(userId: UserId): Future[Option[User]] =
+    userRepository.fetchUserById(userId)
 
   def findAuth(email: String): Future[Option[BasicAuth]] = {
     logger.info(s"requesting cred for user $email ")

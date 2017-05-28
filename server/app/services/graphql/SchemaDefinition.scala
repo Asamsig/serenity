@@ -65,7 +65,7 @@ object SchemaDefinition {
           tags = IsSelf :: WithRole(Seq(AdminRole)) :: Nil,
           resolve = ctx => {
             val userId = ctx.argOpt[UserId]("userId").getOrElse(ctx.ctx.user.get.userId)
-            ctx.ctx.userRepository.fetchUserById(userId)
+            ctx.ctx.userService.findUserById(userId)
           }
         )
       )
