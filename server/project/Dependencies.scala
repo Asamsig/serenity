@@ -9,7 +9,7 @@ object Versions {
   val protoBuf        = "3.1.0"
   val playSlick       = "2.1.0"
   val postgresql      = "9.4.1212"
-  val sangria         = "1.1.0"
+  val sangria         = "1.2.0"
   val sangriaPlayJson = "1.0.0"
 }
 
