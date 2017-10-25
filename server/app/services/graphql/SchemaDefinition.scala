@@ -8,6 +8,7 @@ import sangria.macros.derive
 import sangria.macros.derive.ReplaceField
 import sangria.schema._
 import sangria.validation.ValueCoercionViolation
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 object SchemaDefinition {
 
@@ -72,6 +73,45 @@ object SchemaDefinition {
     )
   }
 
-  val SerenitySchema = Schema(QueryType)
+  val FirstNameArgument =
+    Argument(name = "firstName", argumentType = OptionInputType(StringType))
+
+  val LastNameArgument =
+    Argument(name = "lastName", argumentType = OptionInputType(StringType))
+
+  val PhoneArgument =
+    Argument(name = "phone", argumentType = OptionInputType(StringType))
+
+  val AddressArgument =
+    Argument(name = "address", argumentType = OptionInputType(StringType))
+
+  val MutationType = ObjectType(
+    "Mutations",
+    fields[GraphQlContext, Unit](
+      Field(
+        name = "updateUser",
+        fieldType = OptionType(UserType),
+        tags = IsSelf :: WithRole(Seq(AdminRole)) :: Nil,
+        arguments = UserIdArgument :: FirstNameArgument :: LastNameArgument :: PhoneArgument :: AddressArgument :: Nil,
+        resolve = ctx => {
+          val userId = ctx.argOpt[UserId]("userId").getOrElse(ctx.ctx.user.get.userId)
+          ctx.ctx.userService
+            .updateUser(
+              userId,
+              ctx.arg(FirstNameArgument),
+              ctx.arg(LastNameArgument),
+              ctx.arg(PhoneArgument),
+              ctx.arg(AddressArgument)
+            )
+            .map(u => {
+              println(s"Ret user $u")
+              u
+            })
+        }
+      )
+    )
+  )
+
+  val SerenitySchema = Schema(QueryType, Some(MutationType))
 
 }

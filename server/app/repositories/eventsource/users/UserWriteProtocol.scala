@@ -12,6 +12,14 @@ object UserWriteProtocol {
       attendee: Attendee
   ) extends Cmd
 
+  case class UpdateUserProfileCmd(
+      userId: UserId,
+      firstName: String,
+      lastName: String,
+      address: String,
+      phone: String
+  )
+
   case class UserUpdatedEvt(
       id: UserId,
       email: String,
