@@ -20,5 +20,7 @@ matrix:
         - cd client
       install:
         - npm install
+      before-script:
+        - cd client
       script:
         - npm run build
