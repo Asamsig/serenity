@@ -1,0 +1,22 @@
+sudo: false
+matrix:
+  include:
+    # Server
+    - language: scala
+      scala:
+        - 2.11.8
+      jdk:
+        - oraclejdk8
+      before-script:
+        - cd server
+      script:
+        - sbt compile
+
+    # Client
+    - language: node_js
+      before-install:
+        - cd client
+      install:
+        - npm install
+      script:
+        - npm run build
