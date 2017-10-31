@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "javaBin membership frontend",
-    "repository": "https://github.com/moarwick/elm-webpack-starter.git",
+    "repository": "https://github.com/javaBin/serenity",
     "license": "MIT",
     "source-directories": [
         "src/elm"
