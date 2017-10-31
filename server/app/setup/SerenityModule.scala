@@ -28,6 +28,7 @@ class SerenityModule(environment: Environment, config: Configuration)
     ctrls.addBinding.to[LoginCtrl].asEagerSingleton()
     ctrls.addBinding.to[PingCtrl].asEagerSingleton()
     ctrls.addBinding.to[AdminCtrl].asEagerSingleton()
+    ctrls.addBinding.to[GraphQLCtrl].asEagerSingleton()
 
     bind[UserRepository].to[SqlUserRepository]
 
@@ -45,7 +46,6 @@ class SerenityModule(environment: Environment, config: Configuration)
 
     bind[UpdateViewStarter].asEagerSingleton()
   }
-
 }
 
 class UserManagerActorProvider @Inject()(as: ActorSystem, repo: UserRepository)

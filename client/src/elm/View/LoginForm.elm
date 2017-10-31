@@ -1,19 +1,20 @@
 module View.LoginForm exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (type_, placeholder, name)
 import Model
 import Messages exposing (Msg(..))
 import Html.Events exposing (onClick, onInput)
+import View.UserInfoView exposing (userInfoView)
 
 
 view : Model.Model -> Html Msg
 view model =
     case model.auth of
-        Model.LoggedOut form ->
+        Model.LoggedOut formData ->
             div []
                 [ div
-                    [ class "h1" ]
+                    []
                     [ text ("JavaBin") ]
                 , input
                     [ onInput Messages.UpdateUsername
@@ -30,7 +31,7 @@ view model =
                     ]
                     []
                 , button [ onClick LogIn ] [ text "Login" ]
-                , case form.loginErr of
+                , case formData.loginErr of
                     Nothing ->
                         text ""
 
@@ -39,8 +40,4 @@ view model =
                 ]
 
         Model.LoggedIn token ->
-            div
-                [ class "h1" ]
-                [ text "Welcome"
-                , button [ onClick Messages.LogOut ] [ text "Log Out" ]
-                ]
+            userInfoView model

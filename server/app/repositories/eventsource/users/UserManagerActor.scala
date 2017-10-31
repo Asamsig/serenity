@@ -28,6 +28,13 @@ class UserManagerActor(repo: UserRepository, userActorProps: UserId => Props)
         case None      => getOrCreateUserActor(UserId.generate()).tell(cmd, respondTo)
       }
 
+    case cmd: UpdateUserProfileCmd =>
+      val respondTo = sender()
+      repo.fetchUserById(cmd.userId).foreach {
+        case Some(usr) => getOrCreateUserActor(usr.userId).tell(cmd, respondTo)
+        case None      => respondTo ! Failure(ValidationFailed("User doesn't exist"))
+      }
+
     case cmd: HospesImportCmd =>
       val respondTo = sender()
       repo.findUsersIdByEmail(cmd.user.email.map(_.address)).foreach {

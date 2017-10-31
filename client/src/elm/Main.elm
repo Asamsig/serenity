@@ -5,10 +5,9 @@ import Html.Attributes exposing (..)
 import View.LoginForm
 import Model exposing (Model)
 import Messages exposing (Msg(..))
-import Http
-import Json.Decode as Decode
-import Json.Encode as Encode
 import Ports
+import Api.LoginAction exposing (loginAction)
+import Api.UserInfoAction exposing (userInfoAction)
 
 
 -- APP
@@ -30,23 +29,6 @@ sub model =
         [ Ports.fetchedToken Messages.StoredToken
         , Ports.loggedOut Messages.LoggedOut
         ]
-
-
-loginAction : String -> String -> Cmd Msg
-loginAction usr pwd =
-    Http.send
-        LoggedIn
-        (Http.post
-            "api/login"
-            (Http.jsonBody
-                (Encode.object
-                    [ ( "username", Encode.string usr )
-                    , ( "password", Encode.string pwd )
-                    ]
-                )
-            )
-            (Decode.field "token" Decode.string)
-        )
 
 
 
@@ -89,21 +71,27 @@ update msg model =
                     { model | auth = Model.LoggedOut { formData | loginErr = Just "login_failed" } } ! []
 
         LoggedIn (Ok token) ->
-            { model | auth = Model.LoggedIn token } ! [ Ports.login token ]
+            { model | auth = Model.LoggedIn token } ! [ Ports.login token, userInfoAction token ]
 
         LogOut ->
             model ! [ Ports.logout () ]
 
         LoggedOut () ->
-            { model | auth = Model.initAuthModel } ! []
+            Model.initModel ! []
 
         StoredToken mbyToken ->
             case mbyToken of
                 Just token ->
-                    { model | auth = Model.LoggedIn token } ! []
+                    { model | auth = Model.LoggedIn token } ! [ userInfoAction token ]
 
                 Nothing ->
                     model ! []
+
+        UserInfo (Ok res) ->
+            { model | userInfo = Just res } ! []
+
+        UserInfo (Err e) ->
+            model ! []
 
 
 
@@ -113,15 +101,14 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        [ class "container"
-        , style
+        [ style
             [ ( "margin-top", "30px" )
             , ( "text-align", "center" )
             ]
         ]
-        [ div [ class "row" ]
-            [ div [ class "col-xs-12" ]
-                [ div [ class "jumbotron" ]
+        [ div []
+            [ div []
+                [ div []
                     [ View.LoginForm.view model
                     , p [] [ text ("javaBin  membership frontend") ]
                     ]

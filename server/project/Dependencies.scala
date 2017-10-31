@@ -3,12 +3,14 @@ import play.sbt.PlayImport
 import sbt.{Resolver, _}
 
 object Versions {
-  val akka         = "2.4.17"
-  val silhouette   = "4.0.0"
-  val scalaVersion = "2.11.8"
-  val protoBuf     = "3.1.0"
-  val playSlick    = "2.1.0"
-  val postgresql   = "9.4.1212"
+  val akka            = "2.4.17"
+  val silhouette      = "4.0.0"
+  val scalaVersion    = "2.11.8"
+  val protoBuf        = "3.1.0"
+  val playSlick       = "2.1.0"
+  val postgresql      = "9.4.1212"
+  val sangria         = "1.2.0"
+  val sangriaPlayJson = "1.0.0"
 }
 
 object Dependencies {
@@ -31,6 +33,11 @@ object Dependencies {
     "org.postgresql"            % "postgresql"                           % Versions.postgresql,
     "org.fusesource.leveldbjni" % "leveldbjni-all"                       % "1.8",
     "com.google.protobuf"       % "protobuf-java"                        % Versions.protoBuf
+  )
+
+  private val sangria = Seq(
+    "org.sangria-graphql" %% "sangria"           % Versions.sangria,
+    "org.sangria-graphql" %% "sangria-play-json" % Versions.sangriaPlayJson
   )
 
   private val test = Seq(
@@ -57,7 +64,7 @@ object Dependencies {
     PlayImport.evolutions
   )
 
-  val playDependencies = akka ++ persistence ++ test ++ silhouette ++ root
+  val playDependencies = akka ++ persistence ++ test ++ silhouette ++ sangria ++ root
 
   val protobufDependencies = Seq(
     "com.trueaccord.scalapb" %% "scalapb-runtime" % SbVersion.scalapbVersion % "protobuf"

@@ -68,6 +68,23 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
       }
     }
 
+    describe("receive UpdateUserProfileCmd") {
+
+      it("do not forward it when user doesn't exist") {
+        val cmd   = UpdateUserProfileCmd(UserId.generate(), "fn", "ln", "adr", "phone")
+        val setup = defaultSetup()
+        setup.userManager ! cmd
+        expectMsg(Failure(ValidationFailed("User doesn't exist")))
+      }
+
+      it("forward it when user does exist") {
+        val cmd   = UpdateUserProfileCmd(user.userId, "fn", "ln", "adr", "phone")
+        val setup = defaultSetup()
+        setup.userManager ! cmd
+        setup.probe.expectMsg(cmd)
+      }
+    }
+
     describe("receive HospesImportCmd") {
       it("forward it when user doesn't exist") {
         val cmd = HospesImportCmd(

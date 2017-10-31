@@ -60,8 +60,10 @@ class UserActor(id: UserId, userRepository: UserRepository)
         )
       ) {
         case evt: HospesUserImportEvt =>
-          updateUserModel(evt)
-          sender() ! Success("User created")
+          val respondTo = sender()
+          updateUserModel(evt).foreach { _ =>
+            respondTo ! Success("User created")
+          }
         case evt: BasicAuthEvt =>
           credentials = Some(HospesAuth(evt.password, evt.salt))
         case evt: MembershipUpdateEvt =>
@@ -80,10 +82,35 @@ class UserActor(id: UserId, userRepository: UserRepository)
       }
       persistAll(events) {
         case evt: UserUpdatedEvt =>
-          updateUserModel(evt)
-          sender() ! Success("")
+          val respondTo = sender()
+          updateUserModel(evt).foreach { _ =>
+            respondTo ! Success("")
+          }
         case evt: MembershipUpdateEvt =>
           updateUserModel(evt)
+      }
+
+    case cmd: UpdateUserProfileCmd =>
+      user.map(
+        u =>
+          UserUpdatedEvt(
+            id,
+            u.mainEmail.address,
+            cmd.firstName,
+            cmd.lastName,
+            cmd.phone,
+            EventMeta()
+        )
+      ) match {
+        case Some(evt) =>
+          persist(evt) { e =>
+            val respondTo = sender()
+            updateUserModel(evt).foreach { _ =>
+              respondTo ! Success("")
+            }
+          }
+        case None =>
+          sender() ! UserNotFound
       }
 
     case UpdateCredentialsCmd(email, hashedPassword) =>
@@ -92,11 +119,14 @@ class UserActor(id: UserId, userRepository: UserRepository)
       } else {
         user.foreach(u => {
           persist(BasicAuthEvt(u.userId, hashedPassword)) { evt =>
-            updateUserModel(evt)
-            sender() ! UserCredentialsResponse(credentials.get)
+            val respondTo = sender()
+            updateUserModel(evt).foreach { _ =>
+              respondTo ! UserCredentialsResponse(credentials.get)
+            }
           }
         })
       }
+
     case GetUser(queriedId) =>
       if (id != queriedId) {
         sender() ! UserNotFound
@@ -119,6 +149,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
         )
         sender() ! CredentialsNotFound
       }
+
     case qry @ UpdateView(uid) =>
       user match {
         case Some(usr) =>
@@ -200,7 +231,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
     }
   }
 
-  private def updateUserModel(evt: Evt, isLive: Boolean = true) = {
+  private def updateUserModel(evt: Evt, isLive: Boolean = true): Future[Unit] = {
     evt match {
       case evt: HospesUserImportEvt => user = EventToUser(evt)
       case evt: UserUpdatedEvt      => user = EventToUser(evt, user)
@@ -225,7 +256,11 @@ class UserActor(id: UserId, userRepository: UserRepository)
         })
       case _ =>
     }
-    if (isLive) user.foreach(userRepository.saveUser)
+    if (isLive) {
+      user.map(userRepository.saveUser).getOrElse(Future.successful(()))
+    } else {
+      Future.successful(())
+    }
   }
 
 }
