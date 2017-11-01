@@ -8,23 +8,22 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
 import models.HospesDomain.{ImportHospesMembership, ImportHospesPerson}
 import models.user.Roles.AdminRole
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
-import play.api.mvc.BodyParsers.parse
 import play.api.mvc.{Result, Results}
 import play.api.routing.Router
 import play.api.routing.sird._
 import services.HospesImportService
 
-import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 @Singleton
 class HospesImportCtrl @Inject()(
     hospesImportService: HospesImportService,
     silhouette: Silhouette[DefaultEnv]
-) extends HospesImportCtrlFormats
+)(implicit ec: ExecutionContext)
+  extends HospesImportCtrlFormats
     with RouterCtrl {
 
   override def withRoutes(): Router.Routes = {

@@ -4,19 +4,18 @@ import javax.inject.{Inject, Named}
 
 import akka.actor.ActorRef
 import akka.util.Timeout
-import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import models.EventbriteHandleStatus.{Failure, NotSupported, Success}
 import models.{EventbriteHandleStatus, EventbriteWebHook}
+import play.api.Logger
 import repositories.eventsource.users.UserWriteProtocol.CreateOrUpdateUserCmd
 
-import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
+import scala.concurrent.{ExecutionContext, Future}
 
 class EventbriteService @Inject()(
     client: EventbriteClient,
     @Named("UserManagerActor") userManagerActor: ActorRef
-) {
+)(implicit ec: ExecutionContext) {
 
   implicit val timeout: Timeout = 120.seconds
   type Status = EventbriteHandleStatus.Status

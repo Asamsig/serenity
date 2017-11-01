@@ -4,15 +4,8 @@ import auth.DefaultEnv
 import com.google.inject.Inject
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
-import services.graphql.{
-  GraphQlContext,
-  PermissionEnforcerMiddleware,
-  SchemaDefinition,
-  SecurityException
-}
 import models.user.User
 import play.api.libs.json.{JsObject, JsString, Json}
-import play.api.mvc.{Action, Controller}
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
 import sangria.ast.Document
@@ -20,6 +13,7 @@ import sangria.execution._
 import sangria.parser.{QueryParser, SyntaxError}
 import sangria.renderer.SchemaRenderer
 import services.UserService
+import services.graphql.{GraphQlContext, PermissionEnforcerMiddleware, SchemaDefinition, SecurityException}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -28,8 +22,7 @@ class GraphQLCtrl @Inject()(
     userService: UserService,
     silhouette: Silhouette[DefaultEnv]
 )(implicit ec: ExecutionContext)
-    extends RouterCtrl
-    with Controller {
+  extends RouterCtrl {
 
   import sangria.marshalling.playJson._
   import silhouette.UserAwareAction

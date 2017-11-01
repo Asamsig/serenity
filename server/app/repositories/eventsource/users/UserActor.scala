@@ -9,7 +9,6 @@ import models._
 import models.user.Auths.{BasicAuth, HospesAuth, SerenityAuth}
 import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
 import models.user.{Email, User, UserId}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
 import repositories.view.UserRepository
@@ -63,7 +62,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
           val respondTo = sender()
           updateUserModel(evt).foreach { _ =>
             respondTo ! Success("User created")
-          }
+          }(context.system.dispatcher)
         case evt: BasicAuthEvt =>
           credentials = Some(HospesAuth(evt.password, evt.salt))
         case evt: MembershipUpdateEvt =>
@@ -85,7 +84,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
           val respondTo = sender()
           updateUserModel(evt).foreach { _ =>
             respondTo ! Success("")
-          }
+          }(context.system.dispatcher)
         case evt: MembershipUpdateEvt =>
           updateUserModel(evt)
       }
@@ -107,7 +106,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
             val respondTo = sender()
             updateUserModel(evt).foreach { _ =>
               respondTo ! Success("")
-            }
+            }(context.system.dispatcher)
           }
         case None =>
           sender() ! UserNotFound
@@ -122,7 +121,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
             val respondTo = sender()
             updateUserModel(evt).foreach { _ =>
               respondTo ! UserCredentialsResponse(credentials.get)
-            }
+            }(context.system.dispatcher)
           }
         })
       }
@@ -160,16 +159,16 @@ class UserActor(id: UserId, userRepository: UserRepository)
               credentials
                 .map(userRepository.saveCredentials(usr.userId, _))
                 .getOrElse(Future.successful(()))
-            }
+            }(context.system.dispatcher)
             .map { _ =>
               log.debug(s"Migration done for ${usr.userId}")
               replyTo ! qry
-            }
+            }(context.system.dispatcher)
             .recover {
               case NonFatal(t) =>
                 log.error(t, s"Failed to save user ${usr.userId}")
                 replyTo ! Failure(t)
-            }
+            }(context.system.dispatcher)
         case None => Failure(new IllegalStateException(s"User not found with id $uid"))
       }
 

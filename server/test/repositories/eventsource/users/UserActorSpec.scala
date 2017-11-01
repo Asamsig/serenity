@@ -1,18 +1,19 @@
 package repositories.eventsource.users
 
+import java.util.concurrent.TimeUnit
+
 import akka.actor.ActorRef
 import akka.actor.Status.{Failure, Success}
 import helpers.akka.{AkkaConfig, AkkaSuite}
 import models.user.{Email, UserId}
 import repositories.eventsource.users.UserReadProtocol._
-import repositories.eventsource.users.UserWriteProtocol.{
-  HospesImportCmd,
-  HospesUser,
-  ValidationFailed
-}
+import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesUser, ValidationFailed}
 import repositories.view.memory.MemoryUserRepository
 
-class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersistence()) {
+import scala.concurrent.duration.Duration
+
+class UserActorSpec
+  extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersistence()) {
   val hospesUser: HospesUser = HospesUser(
     List(),
     List(Email("example@java.no", validated = true)),
@@ -32,7 +33,7 @@ class UserActorSpec extends AkkaSuite("UserActorSpec", AkkaConfig.inMemoryPersis
       val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
       userActor ! HospesImportCmd(hospesUser)
 
-      expectMsgClass(classOf[Success])
+      expectMsgClass(Duration(1, TimeUnit.MINUTES), classOf[Success])
     }
 
     it("should handle fail when importing same user") {

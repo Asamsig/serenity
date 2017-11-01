@@ -8,12 +8,13 @@ import models.user.Memberships.{EventbriteMeta, Membership}
 import models.user.Roles.Role
 import models.user.{Email, User, UserId}
 import play.api.db.slick.DatabaseConfigProvider
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class SqlUserRepository @Inject()(val dbConfigProvider: DatabaseConfigProvider)
+class SqlUserRepository @Inject()(
+  val dbConfigProvider: DatabaseConfigProvider
+)(implicit ec: ExecutionContext)
     extends Tables
     with UserRepository {
 

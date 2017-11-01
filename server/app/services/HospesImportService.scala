@@ -8,21 +8,16 @@ import akka.util.Timeout
 import models.HospesDomain.{ImportHospesMembership, ImportHospesPerson}
 import models.user.Email
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserWriteProtocol
-import repositories.eventsource.users.UserWriteProtocol.{
-  HospesImportCmd,
-  HospesMembership,
-  HospesUser
-}
+import repositories.eventsource.users.UserWriteProtocol.{HospesImportCmd, HospesMembership, HospesUser}
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class HospesImportService @Inject()(
     @Named("UserManagerActor") userManagerActor: ActorRef
-) {
+)(implicit ec: ExecutionContext) {
 
   val logger                    = Logger(classOf[HospesImportService])
   implicit val timeout: Timeout = 120.seconds

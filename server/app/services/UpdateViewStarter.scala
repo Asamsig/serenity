@@ -3,17 +3,16 @@ package services
 import javax.inject.{Inject, Singleton}
 
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.view.UserRepository
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
 class UpdateViewStarter @Inject()(
     userRepository: UserRepository,
     updateUserViewService: UpdateUserViewService
-) {
+)(implicit ec: ExecutionContext) {
 
   val logger = Logger(classOf[UpdateViewStarter])
 

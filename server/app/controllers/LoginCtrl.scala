@@ -4,23 +4,22 @@ import javax.inject.Inject
 
 import auth.DefaultEnv
 import com.mohiva.play.silhouette.api.Authenticator.Implicits._
-import com.mohiva.play.silhouette.api.{LoginEvent, LogoutEvent, Silhouette}
 import com.mohiva.play.silhouette.api.exceptions.ProviderException
 import com.mohiva.play.silhouette.api.util.{Clock, Credentials}
+import com.mohiva.play.silhouette.api.{LoginEvent, LogoutEvent, Silhouette}
 import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import controllers.helpers.RouterCtrl
 import net.ceedubs.ficus.Ficus._
 import play.api.Configuration
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Controller, Request}
+import play.api.mvc.Request
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
 import services.UserIdentityService
 
-import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 
 class LoginCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],
@@ -28,8 +27,8 @@ class LoginCtrl @Inject()(
     userIdentityService: UserIdentityService,
     configuration: Configuration,
     clock: Clock
-) extends Controller
-    with RouterCtrl {
+)(implicit ec: ExecutionContext)
+  extends RouterCtrl {
 
   override def withRoutes(): Routes = {
     case POST(p"/api/login") => login()

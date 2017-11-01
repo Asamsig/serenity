@@ -8,16 +8,16 @@ import com.mohiva.play.silhouette.api.util.{PasswordHasher, PasswordInfo}
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
 import models.user.Auths.{HospesAuth, SerenityAuth}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import services.UserService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class PasswordAuth @Inject()(
     userService: UserService,
     adminUser: AdminUser,
     @Named("bcryptHasher") bcryptHasher: PasswordHasher
-) extends DelegableAuthInfoDAO[PasswordInfo] {
+)(implicit ec: ExecutionContext)
+  extends DelegableAuthInfoDAO[PasswordInfo] {
 
   override def find(loginInfo: LoginInfo): Future[Option[PasswordInfo]] = {
     if (loginInfo.providerKey == adminUser.user.mainEmail.address) {
