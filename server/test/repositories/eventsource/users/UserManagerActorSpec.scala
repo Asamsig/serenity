@@ -122,7 +122,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
         val setup = defaultSetup()
         setup.userManager ! cmd
 
-        setup.probe.expectNoMsg(100 millis)
+        setup.probe.expectNoMessage(100 millis)
         expectMsg(Failure(ValidationFailed("User exist")))
       }
     }
@@ -140,7 +140,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
         val setup = defaultSetup()
         setup.userManager ! cmd
 
-        setup.probe.expectNoMsg(100 millis)
+        setup.probe.expectNoMessage(100 millis)
         expectMsg(Failure(ValidationFailed("User does not exist")))
       }
     }
@@ -159,7 +159,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
         val setup = defaultSetup()
         setup.userManager ! query
 
-        setup.probe.expectNoMsg(100 millis)
+        setup.probe.expectNoMessage(100 millis)
         expectMsg(Failure(ValidationFailed("User with email doesn't exist")))
       }
     }
@@ -178,7 +178,7 @@ class UserManagerActorSpec extends AkkaSuite("UserManagerActorSpec") with MockFa
         val setup = defaultSetup()
         setup.userManager ! query
 
-        setup.probe.expectNoMsg(100 millis)
+        setup.probe.expectNoMessage(100 millis)
         expectMsg(CredentialsNotFound)
       }
     }

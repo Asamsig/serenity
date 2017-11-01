@@ -100,8 +100,8 @@ class GraphQLCtrl @Inject()(
       Json.parse(variables).as[JsObject]
     }
 
-  private val errorHandler: Executor.ExceptionHandler = {
-    case (_, SecurityException(message)) => HandledException(message)
+  private val errorHandler = ExceptionHandler {
+    case (m, SecurityException(message)) ⇒ HandledException(message)
   }
 
   private def executeGraphQLQuery(
