@@ -7,11 +7,11 @@ object Versions {
   val silhouette = "5.0.2"
   val scalaVersion    = "2.11.11"
   val protoBuf        = "3.4.0"
-  val playSlick = "3.0.2"
+  val playSlick = "3.0.0"
   val postgresql      = "42.1.4"
   val sangria         = "1.3.2"
   val sangriaPlayJson = "1.0.4"
-  val play = "2.6.6"
+  val playVersion = play.core.PlayVersion.current
 }
 
 object Dependencies {
@@ -66,7 +66,7 @@ object Dependencies {
   )
 
   private val playDeps = Seq(
-    "com.typesafe.play" %% "play-guice" % Versions.play
+    "com.typesafe.play" %% "play-guice" % Versions.playVersion
   )
 
   val playDependencies = playDeps ++ akka ++ persistence ++ test ++ silhouette ++ sangria ++ root

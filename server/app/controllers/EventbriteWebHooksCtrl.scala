@@ -16,6 +16,7 @@ import services.eventbrite._
 import scala.concurrent.{ExecutionContext, Future}
 
 case class EventbriteWebHookConfig(secret: String)
+
 @Singleton
 class EventbriteWebHooksCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],

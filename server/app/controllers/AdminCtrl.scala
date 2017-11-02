@@ -22,8 +22,8 @@ class AdminCtrl @Inject()(
 )(implicit ec: ExecutionContext)
   extends RouterCtrl {
   override def withRoutes(): Routes = {
-    case PUT(p"/api/admin/updaeview/all") => updateViewAll()
-    case PUT(p"/api/admin/updaeview/$id") => updateView(id)
+    case PUT(p"/api/admin/updateview/all") => updateViewAll()
+    case PUT(p"/api/admin/updateview/$id") => updateView(id)
   }
 
   import silhouette.SecuredAction

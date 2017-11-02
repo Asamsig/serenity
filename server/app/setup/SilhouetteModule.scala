@@ -21,7 +21,7 @@ import net.codingwell.scalaguice.ScalaModule
 import play.api.Configuration
 import services.UserIdentityService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
 class SilhouetteModule extends AbstractModule with ScalaModule {
@@ -37,26 +37,28 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
       .annotatedWithName("hospesHasher")
       .toInstance(new HospesPasswordHasher)
 
-    bind[IDGenerator].toInstance(new SecureRandomIDGenerator())
     bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))
     bind[EventBus].toInstance(EventBus())
     bind[Clock].toInstance(Clock())
   }
 
   @Provides
-  def provideEnvironment(
-      userService: UserIdentityService,
-      authenticatorService: AuthenticatorService[JWTAuthenticator],
-      eventBus: EventBus
-  ): Environment[DefaultEnv] = {
+  def idGenerator(implicit ec: ExecutionContext): IDGenerator =
+    new SecureRandomIDGenerator()
 
+  @Provides
+  def provideEnvironment(
+    implicit userService: UserIdentityService,
+      authenticatorService: AuthenticatorService[JWTAuthenticator],
+    eventBus: EventBus,
+    ec: ExecutionContext
+  ): Environment[DefaultEnv] =
     Environment[DefaultEnv](
       userService,
       authenticatorService,
       Seq(),
       eventBus
     )
-  }
 
   @Provides
   def providePasswordHasherRegistry(
@@ -68,7 +70,8 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
 
   @Provides
   def provideAuthInfoRepository(
-      passwordInfoDAO: DelegableAuthInfoDAO[PasswordInfo]
+    implicit passwordInfoDAO: DelegableAuthInfoDAO[PasswordInfo],
+    ec: ExecutionContext
   ): AuthInfoRepository = {
     new DelegableAuthInfoRepository(passwordInfoDAO)
   }
@@ -83,10 +86,11 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
 
   @Provides
   def provideAuthenticatorService(
-      @Named("authenticator-crypter") crypter: Crypter,
+    implicit @Named("authenticator-crypter") crypter: Crypter,
       idGenerator: IDGenerator,
       configuration: Configuration,
-      clock: Clock
+    clock: Clock,
+    ec: ExecutionContext
   ): AuthenticatorService[JWTAuthenticator] = {
 
     implicit val jwtAuthSettingsReader: ValueReader[JWTAuthenticatorSettings] =
