@@ -1,6 +1,5 @@
 package services.graphql
 
-import services.graphql.Permissions.{IsSelf, WithRole}
 import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
 import models.user.Roles.{AdminRole, Role}
 import models.user.{Email, User, UserId}
@@ -8,7 +7,9 @@ import sangria.macros.derive
 import sangria.macros.derive.ReplaceField
 import sangria.schema._
 import sangria.validation.ValueCoercionViolation
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import services.graphql.Permissions.{IsSelf, WithRole}
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object SchemaDefinition {
 

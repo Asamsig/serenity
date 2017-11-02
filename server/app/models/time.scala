@@ -7,7 +7,7 @@ package object time {
   def dateTimeNow(): LocalDateTime =
     LocalDateTime.now(Clock.systemUTC())
 
-  def toUtcMillis(ld: LocalDate) =
+  def toUtcMillis(ld: LocalDate): Long =
     ld.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli
 
   def instanceToUtcLocalDate(ins: Instant): LocalDate =

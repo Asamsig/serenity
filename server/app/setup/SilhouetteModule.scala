@@ -7,18 +7,10 @@ import com.mohiva.play.silhouette.api.crypto.{Crypter, CrypterAuthenticatorEncod
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import com.mohiva.play.silhouette.api.services.AuthenticatorService
 import com.mohiva.play.silhouette.api.util._
-import com.mohiva.play.silhouette.api.{
-  Environment,
-  EventBus,
-  Silhouette,
-  SilhouetteProvider
-}
+import com.mohiva.play.silhouette.api.{Environment, EventBus, Silhouette, SilhouetteProvider}
 import com.mohiva.play.silhouette.crypto.{JcaCrypter, JcaCrypterSettings}
 import com.mohiva.play.silhouette.impl.authenticators._
-import com.mohiva.play.silhouette.impl.util.{
-  DefaultFingerprintGenerator,
-  SecureRandomIDGenerator
-}
+import com.mohiva.play.silhouette.impl.util.{DefaultFingerprintGenerator, SecureRandomIDGenerator}
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
 import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
 import com.mohiva.play.silhouette.persistence.repositories.DelegableAuthInfoRepository
@@ -27,9 +19,9 @@ import net.ceedubs.ficus.readers.ArbitraryTypeReader._
 import net.ceedubs.ficus.readers.ValueReader
 import net.codingwell.scalaguice.ScalaModule
 import play.api.Configuration
-import play.api.libs.concurrent.Execution.Implicits._
 import services.UserIdentityService
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
 class SilhouetteModule extends AbstractModule with ScalaModule {
@@ -45,26 +37,28 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
       .annotatedWithName("hospesHasher")
       .toInstance(new HospesPasswordHasher)
 
-    bind[IDGenerator].toInstance(new SecureRandomIDGenerator())
     bind[FingerprintGenerator].toInstance(new DefaultFingerprintGenerator(false))
     bind[EventBus].toInstance(EventBus())
     bind[Clock].toInstance(Clock())
   }
 
   @Provides
-  def provideEnvironment(
-      userService: UserIdentityService,
-      authenticatorService: AuthenticatorService[JWTAuthenticator],
-      eventBus: EventBus
-  ): Environment[DefaultEnv] = {
+  def idGenerator(implicit ec: ExecutionContext): IDGenerator =
+    new SecureRandomIDGenerator()
 
+  @Provides
+  def provideEnvironment(
+    implicit userService: UserIdentityService,
+      authenticatorService: AuthenticatorService[JWTAuthenticator],
+    eventBus: EventBus,
+    ec: ExecutionContext
+  ): Environment[DefaultEnv] =
     Environment[DefaultEnv](
       userService,
       authenticatorService,
       Seq(),
       eventBus
     )
-  }
 
   @Provides
   def providePasswordHasherRegistry(
@@ -76,7 +70,8 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
 
   @Provides
   def provideAuthInfoRepository(
-      passwordInfoDAO: DelegableAuthInfoDAO[PasswordInfo]
+    implicit passwordInfoDAO: DelegableAuthInfoDAO[PasswordInfo],
+    ec: ExecutionContext
   ): AuthInfoRepository = {
     new DelegableAuthInfoRepository(passwordInfoDAO)
   }
@@ -91,10 +86,11 @@ class SilhouetteModule extends AbstractModule with ScalaModule {
 
   @Provides
   def provideAuthenticatorService(
-      @Named("authenticator-crypter") crypter: Crypter,
+    implicit @Named("authenticator-crypter") crypter: Crypter,
       idGenerator: IDGenerator,
       configuration: Configuration,
-      clock: Clock
+    clock: Clock,
+    ec: ExecutionContext
   ): AuthenticatorService[JWTAuthenticator] = {
 
     implicit val jwtAuthSettingsReader: ValueReader[JWTAuthenticatorSettings] =

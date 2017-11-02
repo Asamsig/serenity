@@ -7,24 +7,23 @@ import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.RouterCtrl
 import models.user.Roles.AdminRole
 import models.user.UserId
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.mvc.BodyParsers.parse
 import play.api.mvc.{Action, Results}
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
 import services.UpdateUserViewService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 @Singleton
 class AdminCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],
     updateUserViewService: UpdateUserViewService
-) extends RouterCtrl {
+)(implicit ec: ExecutionContext)
+  extends RouterCtrl {
   override def withRoutes(): Routes = {
-    case PUT(p"/api/admin/updaeview/all") => updateViewAll()
-    case PUT(p"/api/admin/updaeview/$id") => updateView(id)
+    case PUT(p"/api/admin/updateview/all") => updateViewAll()
+    case PUT(p"/api/admin/updateview/$id") => updateView(id)
   }
 
   import silhouette.SecuredAction

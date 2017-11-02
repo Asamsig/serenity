@@ -8,17 +8,16 @@ import akka.util.Timeout
 import models.user.Auths.{BasicAuth, SerenityAuth}
 import models.user.{User, UserId}
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserWriteProtocol.UpdateUserProfileCmd
 import repositories.view.UserRepository
 
-import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
+import scala.concurrent.{ExecutionContext, Future}
 
 class UserService @Inject()(
     userRepository: UserRepository,
     @Named("UserManagerActor") userManagerActor: ActorRef
-) {
+)(implicit ec: ExecutionContext) {
   implicit val timeout: Timeout = 120.seconds
 
   val logger = Logger(classOf[UserService])

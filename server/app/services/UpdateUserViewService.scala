@@ -7,27 +7,23 @@ import akka.pattern.ask
 import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery2, EventsByTagQuery2}
 import akka.persistence.query.{Offset, PersistenceQuery}
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
+import akka.stream.scaladsl.{Flow, Keep, Sink}
 import akka.util.Timeout
 import models.user.UserId
 import play.api.Logger
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol.UpdateView
-import repositories.eventsource.users.UserWriteProtocol.{
-  HospesUserImportEvt,
-  UserUpdatedEvt
-}
+import repositories.eventsource.users.UserWriteProtocol.{HospesUserImportEvt, UserUpdatedEvt}
 import repositories.eventsource.{DomainReadEventAdapter, Tags}
 
-import scala.concurrent.Future
 import scala.concurrent.duration.DurationDouble
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton
 class UpdateUserViewService @Inject()(
     as: ActorSystem,
     @Named("UserManagerActor") userManagerActor: ActorRef
-)(implicit mat: Materializer) {
+)(implicit mat: Materializer, ec: ExecutionContext) {
 
   val logger = Logger(classOf[UpdateUserViewService])
 

@@ -9,20 +9,17 @@ import models.EventMeta
 import models.user.Memberships.{EventbriteMeta, MembershipIssuer}
 import models.user.{Email, UserId}
 import repositories.eventsource.protobuf.ProtobufFormat
+import repositories.eventsource.users.UserWriteProtocol._
 import serenity.protobuf.Userevents
 import serenity.protobuf.Userevents.BasicAuthMessage.AuthSourceEnum
-import serenity.protobuf.userevents.MembershipUpdateMessage.{
-  ActionEnum,
-  EventbriteInformation,
-  IssuerEnum
-}
+import serenity.protobuf.userevents.MembershipUpdateMessage.{ActionEnum, EventbriteInformation, IssuerEnum}
 import serenity.protobuf.userevents._
 import serenity.protobuf.uuid.{UUID => PUUID}
-import users.UserWriteProtocol._
 
 import scala.language.implicitConversions
 
 object DomainProtobufFormats {
+
   implicit def javaUuidToProtoUuid(id: UUID): Option[PUUID] =
     Some(PUUID(id.getMostSignificantBits, id.getLeastSignificantBits))
 

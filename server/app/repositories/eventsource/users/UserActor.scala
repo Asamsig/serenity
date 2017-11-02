@@ -9,22 +9,22 @@ import models._
 import models.user.Auths.{BasicAuth, HospesAuth, SerenityAuth}
 import models.user.Memberships.{EventbriteMeta, Membership, MembershipIssuer}
 import models.user.{Email, User, UserId}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import repositories.eventsource.users.UserReadProtocol._
 import repositories.eventsource.users.UserWriteProtocol.{HospesAuthSource, _}
 import repositories.view.UserRepository
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 class UserActor(id: UserId, userRepository: UserRepository)
     extends PersistentActor
     with ActorLogging {
 
+  private implicit val ec: ExecutionContext = context.system.dispatcher
   private var user: Option[User]             = None
   private var credentials: Option[BasicAuth] = None
 
-  override def persistenceId: String = s"user-${id.underlying.toString}"
+  override def persistenceId: String = s"user-${id.underlying}"
 
   override def receiveRecover: Receive = {
     case msg: UserUpdatedEvt      => updateUserModel(msg, isLive = false)
@@ -66,6 +66,7 @@ class UserActor(id: UserId, userRepository: UserRepository)
           }
         case evt: BasicAuthEvt =>
           credentials = Some(HospesAuth(evt.password, evt.salt))
+          updateCredentialModel(evt)
         case evt: MembershipUpdateEvt =>
           updateUserModel(evt)
       }

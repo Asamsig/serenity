@@ -5,25 +5,25 @@ import javax.inject.{Inject, Singleton}
 import auth.DefaultEnv
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.helpers.{EnumPathExtractor, RouterCtrl}
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.mvc.Results.EmptyContent
-import play.api.mvc.{Controller, Results}
-import play.api.routing.Router.Routes
-import play.api.routing.sird._
 import models.EventbriteHandleStatus.{Failure, NotSupported, Success}
 import models.{EventbriteStore, EventbriteWebHook, WebHookDetails, WebHookInfoJson}
+import play.api.mvc.Results
+import play.api.mvc.Results.EmptyContent
+import play.api.routing.Router.Routes
+import play.api.routing.sird._
 import services.eventbrite._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class EventbriteWebHookConfig(secret: String)
+
 @Singleton
 class EventbriteWebHooksCtrl @Inject()(
     silhouette: Silhouette[DefaultEnv],
     config: EventbriteWebHookConfig,
     eventbriteService: EventbriteService
-) extends RouterCtrl
-    with Controller
+)(implicit ec: ExecutionContext)
+  extends RouterCtrl
     with WebHookInfoJson {
 
   import silhouette.UnsecuredAction
