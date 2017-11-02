@@ -5,12 +5,10 @@ resolvers += Resolver.url(
   url("http://dl.bintray.com/kipsigman/sbt-plugins")
 )(Resolver.ivyStylePatterns)
 
-addSbtPlugin("io.get-coursier" % "sbt-coursier" % "1.0.0-RC1")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.7")
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.6")
-
-addSbtPlugin("kipsigman" % "sbt-elastic-beanstalk" % "0.1.4")
+//addSbtPlugin("kipsigman" % "sbt-elastic-beanstalk" % "0.1.4-SNAPSHOT")
 
 // Formatting and style checking
-addSbtPlugin("com.geirsson"   % "sbt-scalafmt"           % "0.6.8")
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
+addSbtPlugin("com.geirsson" % "sbt-scalafmt" % "1.3.0")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")

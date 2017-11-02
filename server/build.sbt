@@ -13,7 +13,7 @@ lazy val protobuf = (project in file("protobuf"))
   )
 
 lazy val root = (project in file("."))
-  .enablePlugins(PlayScala, ElasticBeanstalkPlugin)
+  .enablePlugins(PlayScala)
   .settings(CommonSettings.projectSettings: _*)
   .settings(libraryDependencies ++= Dependencies.playDependencies)
   .settings(dockerExposedPorts := Seq(9000))

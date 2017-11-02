@@ -76,7 +76,6 @@ class UserActorSpec
 
     it("should return BasicAuth when credentials exists") {
       val repo                = new MemoryUserRepository()
-      val plainPwd            = "myS3cr3tPwd"
       val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
       val usr                 = hospesUser
       userActor ! HospesImportCmd(usr)
@@ -90,7 +89,6 @@ class UserActorSpec
 
     it("should return CredentialsNotFound when credentials doesn't exists ") {
       val repo                = new MemoryUserRepository()
-      val plainPwd            = "myS3cr3tPwd"
       val userActor: ActorRef = system.actorOf(UserActor(repo, UserId.generate()))
       val usr                 = hospesUser
       userActor ! HospesImportCmd(usr)
