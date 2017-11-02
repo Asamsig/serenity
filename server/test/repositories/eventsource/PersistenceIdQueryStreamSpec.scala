@@ -3,10 +3,7 @@ package repositories.eventsource
 import akka.actor.{Actor, ActorRef, Props, Stash}
 import akka.persistence.PersistentActor
 import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
-import akka.persistence.query.scaladsl.{
-  CurrentEventsByPersistenceIdQuery,
-  EventsByPersistenceIdQuery
-}
+import akka.persistence.query.scaladsl.{CurrentEventsByPersistenceIdQuery, EventsByPersistenceIdQuery}
 import akka.persistence.query.{EventEnvelope, PersistenceQuery}
 import akka.testkit.TestProbe
 import helpers.akka.{AkkaConfig, AkkaSuite, InMemoryCleanup}
@@ -91,7 +88,6 @@ class EventActor(to: Option[ActorRef] = None)
       unstashAll()
     }
     case EventEnvelope(_, _, _, v) if v.isInstanceOf[Int] => {
-      val t = sum
       sum = sum + v.asInstanceOf[Int]
       to.foreach(_ ! v)
     }
