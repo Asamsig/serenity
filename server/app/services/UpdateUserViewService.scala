@@ -4,7 +4,7 @@ import javax.inject.{Inject, Named, Singleton}
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
-import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery2, EventsByTagQuery2}
+import akka.persistence.query.scaladsl.{CurrentEventsByTagQuery, EventsByTagQuery}
 import akka.persistence.query.{Offset, PersistenceQuery}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink}
@@ -12,7 +12,10 @@ import akka.util.Timeout
 import models.user.UserId
 import play.api.Logger
 import repositories.eventsource.users.UserReadProtocol.UpdateView
-import repositories.eventsource.users.UserWriteProtocol.{HospesUserImportEvt, UserUpdatedEvt}
+import repositories.eventsource.users.UserWriteProtocol.{
+  HospesUserImportEvt,
+  UserUpdatedEvt
+}
 import repositories.eventsource.{DomainReadEventAdapter, Tags}
 
 import scala.concurrent.duration.DurationDouble
@@ -49,7 +52,7 @@ class UpdateUserViewService @Inject()(
     groupedUserIdsStream.mapConcat(_.flatten.distinct).runWith(sink)
   }
 
-  private def journal: CurrentEventsByTagQuery2 with EventsByTagQuery2 = {
+  private def journal: CurrentEventsByTagQuery with EventsByTagQuery = {
     val journalPluginId =
       as.settings.config.getString("serenity.persistence.query-journal")
     PersistenceQuery(as).readJournalFor(journalPluginId)
