@@ -4,14 +4,14 @@ import sbt.{Resolver, _}
 
 object Versions {
   val akka            = "2.5.6"
-  val silhouette = "5.0.2"
+  val silhouette      = "5.0.2"
   val scalaVersion    = "2.11.11"
   val protoBuf        = "3.4.0"
-  val playSlick = "3.0.0"
+  val playSlick       = "3.0.2"
   val postgresql      = "42.1.4"
   val sangria         = "1.3.2"
   val sangriaPlayJson = "1.0.4"
-  val playVersion = play.core.PlayVersion.current
+  val playVersion     = play.core.PlayVersion.current
 }
 
 object Dependencies {
@@ -26,14 +26,14 @@ object Dependencies {
   )
 
   private val persistence = akka ++ Seq(
-    "com.typesafe.akka" %% "akka-persistence" % Versions.akka,
+    "com.typesafe.akka"         %% "akka-persistence"       % Versions.akka,
     "com.typesafe.akka"         %% "akka-persistence-query" % Versions.akka,
-    "com.typesafe.akka" %% "akka-remote" % Versions.akka,
-    "org.iq80.leveldb" % "leveldb" % "0.9",
-    "com.github.dnvriend" %% "akka-persistence-jdbc" % "2.4.18.2",
-    "org.postgresql" % "postgresql" % Versions.postgresql,
-    "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
-    "com.google.protobuf" % "protobuf-java" % Versions.protoBuf
+    "com.typesafe.akka"         %% "akka-remote"            % Versions.akka,
+    "org.iq80.leveldb"          % "leveldb"                 % "0.9",
+    "com.github.dnvriend"       %% "akka-persistence-jdbc"  % "2.4.18.2",
+    "org.postgresql"            % "postgresql"              % Versions.postgresql,
+    "org.fusesource.leveldbjni" % "leveldbjni-all"          % "1.8",
+    "com.google.protobuf"       % "protobuf-java"           % Versions.protoBuf
   )
 
   private val sangria = Seq(
@@ -57,11 +57,16 @@ object Dependencies {
   )
 
   private val root = Seq(
-    "com.iheart"        %% "ficus"                 % "1.4.3",
-    "net.codingwell"    %% "scala-guice"           % "4.1.0",
-    "org.postgresql"    % "postgresql"             % Versions.postgresql,
-    "com.typesafe.play" %% "play-slick"            % Versions.playSlick,
-    "com.typesafe.play" %% "play-slick-evolutions" % Versions.playSlick,
+    "com.iheart"        %% "ficus"       % "1.4.3",
+    "net.codingwell"    %% "scala-guice" % "4.1.0",
+    "org.postgresql"    % "postgresql"   % Versions.postgresql,
+    "com.typesafe.play" %% "play-slick"  % Versions.playSlick excludeAll ExclusionRule(
+      "com.typesafe.slick"
+    ),
+    "com.typesafe.play" %% "play-slick-evolutions" % Versions.playSlick excludeAll ExclusionRule(
+      "com.typesafe.slick"
+    ),
+    "com.typesafe.slick" %% "slick" % "3.2.0",
     PlayImport.evolutions
   )
 
