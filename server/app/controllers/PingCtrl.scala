@@ -3,7 +3,7 @@ package controllers
 import javax.inject.{Inject, Singleton}
 
 import controllers.helpers.RouterCtrl
-import play.api.mvc.{Action, Results}
+import play.api.mvc.Results
 import play.api.routing.Router.Routes
 import play.api.routing.sird._
 

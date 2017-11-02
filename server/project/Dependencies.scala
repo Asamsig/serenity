@@ -6,7 +6,7 @@ object Versions {
   val akka                = "2.5.6"
   val akkaPersistenceJdbc = "3.0.1"
   val silhouette          = "5.0.2"
-  val scalaVersion        = "2.11.11"
+  val scalaVersion        = "2.12.4"
   val protoBuf            = "3.4.0"
   val playSlick           = "3.0.2"
   val postgresql          = "42.1.4"
@@ -43,7 +43,7 @@ object Dependencies {
   )
 
   private val test = Seq(
-    "org.scalatestplus.play" %% "scalatestplus-play"          % "2.0.1"       % Test,
+    "org.scalatestplus.play" %% "scalatestplus-play"          % "3.1.2"       % Test,
     "com.typesafe.akka"      %% "akka-testkit"                % Versions.akka % Test,
     "com.github.dnvriend"    %% "akka-persistence-inmemory"   % "2.5.1.1"     % Test,
     "org.scalamock"          %% "scalamock-scalatest-support" % "3.6.0"       % Test
