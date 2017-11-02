@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "javaBin membership frontend",
-    "repository": "https://github.com/javaBin/serenity",
+    "repository": "https://github.com/javaBin/serenity.git",
     "license": "MIT",
     "source-directories": [
         "src/elm"
