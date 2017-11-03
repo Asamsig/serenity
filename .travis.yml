@@ -5,18 +5,16 @@ matrix:
     - language: scala
       scala: 2.12.4
       jdk: oraclejdk8
-      before-script:
+      before_script:
         - cd server
       script:
         - sbt compile
 
     # Client
     - language: node_js
-      before-install:
+      before_install:
         - cd client
       install:
         - npm install
-      before-script:
-        - cd client
       script:
         - npm run build
