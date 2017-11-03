@@ -17,5 +17,7 @@ matrix:
         - cd client
       install:
         - npm install
+      before_script:
+        - npm run reinstall
       script:
         - npm run build
