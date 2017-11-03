@@ -2,7 +2,7 @@ package repositories.eventsource
 
 import akka.NotUsed
 import akka.actor.Actor
-import akka.persistence.query.{EventEnvelope, EventEnvelope2}
+import akka.persistence.query.EventEnvelope
 import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Sink, Source}
 
@@ -36,8 +36,6 @@ trait QueryStream[Env] extends Actor {
   }
 
   def handleStreamEvents(msg: Any): Unit = msg match {
-    case evt @ EventEnvelope2(_, _, snr, _) =>
-      _curSeqNum = snr
     case evt @ EventEnvelope(_, _, snr, _) =>
       _curSeqNum = snr
     case LiveEvents =>
