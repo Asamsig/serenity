@@ -29,8 +29,6 @@ matrix:
       node_js: v8
       before_install:
         - cd client
-      install:
-        - npm install
       before_script:
         - npm run reinstall
         - mv $(npm config get prefix)/bin/elm-make $(npm config get prefix)/bin/elm-make-old
