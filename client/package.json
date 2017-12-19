@@ -4,27 +4,27 @@
   "version": "0.0.1",
   "scripts": {
     "start": "webpack-dev-server --hot --inline",
-    "build": "rimraf dist && webpack",
+    "build": "rimraf dist && webpack --progress",
     "reinstall": "npm i rimraf && rimraf node_modules && npm uninstall -g elm && npm i -g elm && npm i && elm package install -y"
   },
   "devDependencies": {
-    "autoprefixer": "^6.3.6",
-    "copy-webpack-plugin": "^4.0.1",
-    "css-loader": "^0.26.1",
+    "autoprefixer": "^7.2.3",
+    "copy-webpack-plugin": "^4.3.0",
+    "css-loader": "^0.28.7",
     "elm": "^0.18.0",
     "elm-hot-loader": "^0.5.4",
-    "elm-webpack-loader": "^4.1.1",
-    "extract-text-webpack-plugin": "^1.0.1",
-    "file-loader": "^0.9.0",
-    "html-webpack-plugin": "^2.17.0",
-    "node-sass": "^4.2.0",
-    "postcss-loader": "^1.1.1",
+    "elm-webpack-loader": "^4.4.0",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.6",
+    "html-webpack-plugin": "^2.30.1",
+    "node-sass": "^4.7.2",
+    "postcss-loader": "^2.0.9",
     "rimraf": "^2.6.2",
-    "sass-loader": "^4.0.0",
-    "style-loader": "^0.13.1",
-    "url-loader": "^0.5.7",
-    "webpack": "^1.13.1",
-    "webpack-dev-server": "^1.14.1",
-    "webpack-merge": "^2.4.0"
+    "sass-loader": "^6.0.6",
+    "style-loader": "^0.19.1",
+    "url-loader": "^0.6.2",
+    "webpack": "^3.10.0",
+    "webpack-dev-server": "^2.9.7",
+    "webpack-merge": "^4.1.1"
   }
 }
