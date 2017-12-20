@@ -8,16 +8,10 @@ matrix:
         directories:
           - sysconfcpus
       before_install:
-        - ./client/travis_fix.sh
+        - ./client/travis_install_sysconfcpus.sh
         - cd client
         - npm run reinstall
-        - mv ./node_modules/.bin/elm-make ./node_modules/.bin/elm-make-origin
-        - printf "#\041/bin/bash\n\necho \"Running elm-make with sysconfcpus -n 2\"\n\n$TRAVIS_BUILD_DIR/sysconfcpus/bin/sysconfcpus -n 2 elm-make-origin \"\$@\"" > ./node_modules/.bin/elm-make
-        - chmod +x ./node_modules/.bin/elm-make
-      before_script:
-        - which elm-make
-        - npm config get prefix
-        - elm-make -h
+        - ./travis_wrap_elm.sh
       script:
         - npm run build
 
