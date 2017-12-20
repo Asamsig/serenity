@@ -5,27 +5,18 @@ before_install:
   - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
     if [ ! -d sysconfcpus/bin ];
     then
-      echo "\nInstalling sysconfcpus\n";
+      echo "Installing sysconfcpus";
       git clone https://github.com/obmarg/libsysconfcpus.git;
       cd libsysconfcpus;
       ./configure --prefix=$TRAVIS_BUILD_DIR/sysconfcpus;
       make && make install;
       cd ..;
     else
-      echo "\nFound sysconfcpus\n";
+      echo "Found sysconfcpus";
     fi
 
 matrix:
   include:
-
-    # Server
-    - language: scala
-      scala: 2.12.4
-      jdk: oraclejdk8
-      before_script:
-        - cd server
-      script:
-        - sbt compile
 
     # Client
     - language: node_js
@@ -40,3 +31,13 @@ matrix:
         - elm-make -h
       script:
         - npm run build
+
+    # Server
+    - language: scala
+      scala: 2.12.4
+      jdk: oraclejdk8
+      before_script:
+        - cd server
+      script:
+        - sbt compile
+
