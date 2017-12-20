@@ -5,7 +5,7 @@
   "scripts": {
     "start": "webpack-dev-server --hot --inline",
     "build": "rimraf dist && webpack --progress",
-    "reinstall": "npm i rimraf && rimraf node_modules && npm uninstall -g elm && npm i -g elm && npm i && elm package install -y"
+    "reinstall": "npm i rimraf && rimraf node_modules && npm i && elm package install -y"
   },
   "devDependencies": {
     "autoprefixer": "^7.2.3",
