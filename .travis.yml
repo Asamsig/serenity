@@ -1,0 +1,26 @@
+matrix:
+  include:
+
+    # Client
+    - language: node_js
+      node_js: v8
+      cache:
+        directories:
+          - sysconfcpus
+      before_install:
+        - ./client/travis_install_sysconfcpus.sh
+        - cd client
+        - npm run reinstall
+        - ./travis_wrap_elm.sh
+      script:
+        - npm run build
+
+    # Server
+    - language: scala
+      scala: 2.12.4
+      jdk: oraclejdk8
+      before_script:
+        - cd server
+      script:
+        - sbt compile
+
