@@ -1,27 +1,14 @@
-cache:
-  directories:
-    - sysconfcpus
-before_install:
-  - | # epic build time improvement - see https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
-    if [ ! -d sysconfcpus/bin ];
-    then
-      echo "Installing sysconfcpus";
-      git clone https://github.com/obmarg/libsysconfcpus.git;
-      cd libsysconfcpus;
-      ./configure --prefix=$TRAVIS_BUILD_DIR/sysconfcpus;
-      make && make install;
-      cd ..;
-    else
-      echo "Found sysconfcpus";
-    fi
-
 matrix:
   include:
 
     # Client
     - language: node_js
       node_js: v8
+      cache:
+        directories:
+          - sysconfcpus
       before_install:
+        - ./client/travis_fix.sh
         - cd client
         - npm run reinstall
         - mv ./node_modules/.bin/elm-make ./node_modules/.bin/elm-make-origin
