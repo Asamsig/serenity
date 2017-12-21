@@ -30,8 +30,8 @@ package object graphql {
       case _         => Left(UUIDCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) =>
-        toValue(() => UUID.fromString(s), UUIDCoercionViolation)
+      case sv: ast.StringValue =>
+        toValue(() => UUID.fromString(sv.value), UUIDCoercionViolation)
       case _ => Left(UUIDCoercionViolation)
     }
   )
@@ -48,10 +48,13 @@ package object graphql {
       case _                => Left(LocalDateTimeCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) =>
+      case sv: ast.StringValue =>
         toValue(
           () =>
-            OffsetDateTime.parse(s).atZoneSameInstant(ZoneOffset.UTC).toLocalDateTime,
+            OffsetDateTime
+              .parse(sv.value)
+              .atZoneSameInstant(ZoneOffset.UTC)
+              .toLocalDateTime,
           LocalDateTimeCoercionViolation
         )
       case _ => Left(LocalDateTimeCoercionViolation)
@@ -69,9 +72,10 @@ package object graphql {
       case _            => Left(LocalDateTimeCoercionViolation)
     },
     coerceInput = {
-      case ast.StringValue(s, _, _) =>
+      case sv: ast.StringValue =>
         toValue(
-          () => OffsetDateTime.parse(s).atZoneSameInstant(ZoneOffset.UTC).toLocalDate,
+          () =>
+            OffsetDateTime.parse(sv.value).atZoneSameInstant(ZoneOffset.UTC).toLocalDate,
           LocalDateTimeCoercionViolation
         )
       case _ => Left(LocalDateTimeCoercionViolation)

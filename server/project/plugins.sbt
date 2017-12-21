@@ -5,7 +5,7 @@ resolvers += Resolver.url(
   url("http://dl.bintray.com/kipsigman/sbt-plugins")
 )(Resolver.ivyStylePatterns)
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.7")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.9")
 
 //addSbtPlugin("kipsigman" % "sbt-elastic-beanstalk" % "0.1.4-SNAPSHOT")
 
