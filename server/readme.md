@@ -29,8 +29,15 @@ updated with its own tables.
 `TODO`
 
 ## API
-`TODO`
 
+| Endpoint            | Description      |
+|---------------------|------------------|
+| /api/ping           | Ping             |
+| /api/login          | Login            |
+| /api/logout         | Logout           |
+| /api/graphql        | GraphQL endpoint |
+| /api/render-schema  | GraphQL schema   |
+ 
 # Deploy
 
 ## Prod
@@ -41,3 +48,6 @@ present in the `deploy.sh` script.
 
 ## Local
 Use `sbt run`. Requires an postgreSQL database running locally.
+
+Starting a local database with docker:
+> docker run --name serenity_db -e POSTGRES_PASSWORD=serenity -e POSTGRES_USER=serenity -p 5432:5432 -d postgres
